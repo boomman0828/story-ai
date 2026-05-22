@@ -1,0 +1,1961 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>이야기 세계</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0f;
+  --surface: #13131a;
+  --surface2: #1c1c26;
+  --surface3: #232330;
+  --border: #2c2c3e;
+  --accent: #7c6af7;
+  --accent2: #a78bfa;
+  --accent-glow: rgba(124,106,247,0.3);
+  --text: #e8e8f2;
+  --text-dim: #7777aa;
+  --text-dim2: #4a4a6a;
+  --danger: #f87171;
+  --success: #34d399;
+  --gold: #fbbf24;
+  --tab-h: 64px;
+  --header-h: 56px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  height: 100dvh;
+  overflow: hidden;
+  position: relative;
+}
+
+/* 배경 글로우 */
+body::before {
+  content:'';
+  position:fixed;
+  top:0; left:0; right:0; bottom:0;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(124,106,247,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(167,139,250,0.05) 0%, transparent 50%);
+  pointer-events:none;
+  z-index:0;
+}
+
+/* ===== 앱 구조 ===== */
+#app { height:100dvh; display:flex; flex-direction:column; position:relative; z-index:1; }
+
+/* ===== 탭바 ===== */
+.tabbar {
+  position:fixed;
+  bottom:0; left:0; right:0;
+  height:var(--tab-h);
+  background:rgba(19,19,26,0.95);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;
+  z-index:100;
+  padding-bottom:env(safe-area-inset-bottom);
+}
+
+.tab-btn {
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:4px;
+  background:none;
+  border:none;
+  color:var(--text-dim2);
+  cursor:pointer;
+  transition:color 0.2s;
+  font-family:'Noto Sans KR',sans-serif;
+}
+
+.tab-btn.active { color:var(--accent2); }
+
+.tab-icon { font-size:22px; line-height:1; }
+.tab-label { font-size:10px; font-weight:500; }
+
+/* ===== 화면 공통 ===== */
+.page {
+  display:none;
+  flex-direction:column;
+  height:100dvh;
+  padding-bottom:var(--tab-h);
+  position:relative;
+}
+.page.active { display:flex; }
+
+.page-header {
+  height:var(--header-h);
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  background:rgba(19,19,26,0.9);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.page-title {
+  font-family:'Nanum Myeongjo',serif;
+  font-size:22px;
+  font-weight:800;
+  flex:1;
+}
+
+.header-btn {
+  background:none;
+  border:none;
+  color:var(--text-dim);
+  cursor:pointer;
+  font-size:20px;
+  padding:8px;
+  border-radius:10px;
+  transition:all 0.2s;
+}
+.header-btn:hover { color:var(--text); background:var(--surface2); }
+
+.page-body {
+  flex:1;
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+/* ===== 홈 탭 ===== */
+#page-home .page-body { padding:16px; }
+
+.home-banner {
+  background:linear-gradient(135deg, #1a1040, #0f0f1a);
+  border:1px solid rgba(124,106,247,0.3);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:20px;
+  position:relative;
+  overflow:hidden;
+}
+.home-banner::before {
+  content:'';
+  position:absolute;
+  top:-50%;right:-20%;
+  width:200px;height:200px;
+  background:radial-gradient(circle, rgba(124,106,247,0.2), transparent 70%);
+}
+.home-banner-title {
+  font-family:'Nanum Myeongjo',serif;
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.home-banner-sub { font-size:12px; color:var(--text-dim); }
+
+.section-label {
+  font-size:12px;
+  color:var(--text-dim);
+  letter-spacing:2px;
+  text-transform:uppercase;
+  margin-bottom:12px;
+  font-weight:500;
+}
+
+.char-grid {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+  margin-bottom:20px;
+}
+
+.char-grid-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  overflow:hidden;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+}
+.char-grid-card:hover { border-color:var(--accent); transform:translateY(-2px); }
+.char-grid-card:active { transform:scale(0.97); }
+
+.char-grid-img {
+  width:100%;
+  aspect-ratio:3/4;
+  object-fit:cover;
+  background:linear-gradient(135deg, var(--surface2), var(--surface3));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:48px;
+}
+.char-grid-img img { width:100%; height:100%; object-fit:cover; }
+
+.char-grid-info {
+  padding:10px 12px;
+}
+.char-grid-name {
+  font-family:'Nanum Myeongjo',serif;
+  font-size:15px;
+  font-weight:700;
+  margin-bottom:2px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.char-grid-desc {
+  font-size:11px;
+  color:var(--text-dim);
+  overflow:hidden;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  -webkit-box-orient:vertical;
+  line-height:1.4;
+}
+.char-grid-tags {
+  margin-top:6px;
+  display:flex;
+  flex-wrap:wrap;
+  gap:4px;
+}
+.tag {
+  font-size:10px;
+  color:var(--accent2);
+  background:rgba(124,106,247,0.12);
+  padding:2px 7px;
+  border-radius:20px;
+}
+
+.empty-home {
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text-dim);
+}
+.empty-home .big-emoji { font-size:60px; margin-bottom:16px; }
+.empty-home p { font-size:14px; line-height:1.7; }
+
+/* ===== 대화 탭 ===== */
+#page-chat .page-body { padding:0; }
+
+.chat-list { padding:12px; display:flex; flex-direction:column; gap:2px; }
+
+.chat-list-item {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:12px;
+  border-radius:14px;
+  cursor:pointer;
+  transition:background 0.15s;
+}
+.chat-list-item:hover, .chat-list-item:active { background:var(--surface2); }
+
+.chat-list-avatar {
+  width:52px;
+  height:52px;
+  border-radius:14px;
+  background:var(--surface2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:26px;
+  flex-shrink:0;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+.chat-list-avatar img { width:100%; height:100%; object-fit:cover; }
+
+.chat-list-info { flex:1; min-width:0; }
+.chat-list-name {
+  font-size:15px;
+  font-weight:500;
+  margin-bottom:3px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.chat-list-preview {
+  font-size:12px;
+  color:var(--text-dim);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+
+.empty-chat {
+  text-align:center;
+  padding:80px 20px;
+  color:var(--text-dim);
+}
+.empty-chat .big-emoji { font-size:50px; margin-bottom:14px; }
+
+/* ===== 제작 탭 ===== */
+#page-create .page-body { padding:16px; }
+
+.create-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+
+.create-card-item {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  cursor:pointer;
+  transition:background 0.15s;
+  border-bottom:1px solid var(--border);
+}
+.create-card-item:last-child { border-bottom:none; }
+.create-card-item:hover { background:var(--surface2); }
+
+.create-card-avatar {
+  width:48px;
+  height:48px;
+  border-radius:12px;
+  background:var(--surface2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:24px;
+  flex-shrink:0;
+  overflow:hidden;
+}
+.create-card-avatar img { width:100%; height:100%; object-fit:cover; }
+
+.create-card-info { flex:1; min-width:0; }
+.create-card-name {
+  font-size:15px;
+  font-weight:500;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.create-card-stat { font-size:11px; color:var(--text-dim); margin-top:2px; }
+
+.create-card-actions { display:flex; gap:8px; align-items:center; }
+.icon-btn {
+  background:none;
+  border:none;
+  color:var(--text-dim);
+  cursor:pointer;
+  font-size:18px;
+  padding:6px;
+  border-radius:8px;
+  transition:all 0.15s;
+}
+.icon-btn:hover { color:var(--text); background:var(--surface3); }
+.icon-btn.danger:hover { color:var(--danger); }
+
+.fab {
+  position:fixed;
+  bottom:calc(var(--tab-h) + 16px);
+  right:16px;
+  width:56px;
+  height:56px;
+  border-radius:16px;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border:none;
+  color:white;
+  font-size:28px;
+  cursor:pointer;
+  box-shadow:0 4px 20px var(--accent-glow);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:transform 0.2s, box-shadow 0.2s;
+  z-index:50;
+}
+.fab:hover { transform:scale(1.05); box-shadow:0 6px 30px var(--accent-glow); }
+.fab:active { transform:scale(0.95); }
+
+/* ===== 마이페이지 탭 ===== */
+#page-my .page-body { padding:16px; }
+
+.my-profile-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:16px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+.my-avatar {
+  width:64px;
+  height:64px;
+  border-radius:16px;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:30px;
+  flex-shrink:0;
+}
+.my-name {
+  font-family:'Nanum Myeongjo',serif;
+  font-size:18px;
+  font-weight:700;
+  margin-bottom:4px;
+}
+.my-sub { font-size:12px; color:var(--text-dim); }
+
+.settings-card {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  margin-bottom:12px;
+}
+.settings-label {
+  font-size:11px;
+  color:var(--text-dim);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  padding:12px 16px 6px;
+}
+.settings-item {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:14px 16px;
+  border-top:1px solid var(--border);
+  cursor:pointer;
+  transition:background 0.15s;
+}
+.settings-item:first-of-type { border-top:none; }
+.settings-item:hover { background:var(--surface2); }
+.settings-item-icon { font-size:18px; width:28px; text-align:center; }
+.settings-item-label { flex:1; font-size:14px; }
+.settings-item-value { font-size:13px; color:var(--text-dim); }
+
+.api-section {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:16px;
+  margin-bottom:12px;
+}
+.api-section-title {
+  font-size:12px;
+  color:var(--text-dim);
+  letter-spacing:1px;
+  text-transform:uppercase;
+  margin-bottom:10px;
+}
+.api-row { display:flex; gap:8px; }
+.api-input {
+  flex:1;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:11px 14px;
+  color:var(--text);
+  font-size:13px;
+  font-family:monospace;
+  outline:none;
+  transition:border-color 0.2s;
+}
+.api-input:focus { border-color:var(--accent); }
+.api-save-btn {
+  background:var(--accent);
+  color:white;
+  border:none;
+  border-radius:10px;
+  padding:11px 16px;
+  font-size:13px;
+  font-family:'Noto Sans KR',sans-serif;
+  font-weight:500;
+  cursor:pointer;
+  transition:opacity 0.2s;
+  white-space:nowrap;
+}
+.api-save-btn:hover { opacity:0.85; }
+.api-hint { font-size:11px; color:var(--text-dim); margin-top:8px; line-height:1.5; }
+.api-hint a { color:var(--accent2); text-decoration:none; }
+
+/* ===== 모달: 캐릭터 만들기 ===== */
+.modal-overlay {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(8px);
+  z-index:200;
+  display:none;
+  align-items:flex-end;
+}
+.modal-overlay.active { display:flex; }
+
+.modal-sheet {
+  width:100%;
+  max-height:92dvh;
+  background:var(--surface);
+  border-radius:24px 24px 0 0;
+  display:flex;
+  flex-direction:column;
+  animation:slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform:translateY(100%); }
+  to { transform:translateY(0); }
+}
+
+.modal-handle {
+  width:36px;
+  height:4px;
+  background:var(--border);
+  border-radius:2px;
+  margin:12px auto 0;
+  flex-shrink:0;
+}
+
+.modal-header {
+  display:flex;
+  align-items:center;
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.modal-title {
+  font-family:'Nanum Myeongjo',serif;
+  font-size:18px;
+  font-weight:700;
+  flex:1;
+}
+.modal-close {
+  background:none;
+  border:none;
+  color:var(--text-dim);
+  font-size:22px;
+  cursor:pointer;
+  padding:4px;
+}
+
+.modal-body {
+  flex:1;
+  overflow-y:auto;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+}
+
+.form-group { display:flex; flex-direction:column; gap:8px; }
+.form-label {
+  font-size:11px;
+  color:var(--text-dim);
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  font-weight:500;
+}
+.form-input, .form-textarea, .form-select {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:12px 14px;
+  color:var(--text);
+  font-size:14px;
+  font-family:'Noto Sans KR',sans-serif;
+  outline:none;
+  transition:border-color 0.2s;
+  width:100%;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus { border-color:var(--accent); }
+.form-textarea { resize:none; line-height:1.6; }
+.form-select option { background:var(--surface2); }
+
+.image-upload-area {
+  border:2px dashed var(--border);
+  border-radius:14px;
+  padding:24px;
+  text-align:center;
+  cursor:pointer;
+  transition:all 0.2s;
+  position:relative;
+  overflow:hidden;
+}
+.image-upload-area:hover { border-color:var(--accent); background:rgba(124,106,247,0.05); }
+.image-upload-area.has-image { border-style:solid; padding:0; }
+.image-upload-area img {
+  width:100%;
+  height:200px;
+  object-fit:cover;
+  border-radius:12px;
+  display:block;
+}
+.image-upload-icon { font-size:32px; margin-bottom:8px; }
+.image-upload-text { font-size:13px; color:var(--text-dim); }
+.image-upload-hint { font-size:11px; color:var(--text-dim2); margin-top:4px; }
+#imageFileInput { display:none; }
+
+.image-change-btn {
+  position:absolute;
+  bottom:8px;
+  right:8px;
+  background:rgba(0,0,0,0.7);
+  color:white;
+  border:none;
+  border-radius:8px;
+  padding:6px 10px;
+  font-size:12px;
+  cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+}
+
+.emoji-grid {
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.emoji-btn {
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  background:var(--surface2);
+  border:2px solid var(--border);
+  font-size:20px;
+  cursor:pointer;
+  transition:all 0.15s;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.emoji-btn.selected { border-color:var(--accent); background:rgba(124,106,247,0.15); }
+
+.tag-input-wrap { display:flex; gap:8px; }
+.tag-list { display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
+.tag-item {
+  display:flex;
+  align-items:center;
+  gap:4px;
+  background:rgba(124,106,247,0.15);
+  border:1px solid rgba(124,106,247,0.3);
+  border-radius:20px;
+  padding:4px 10px;
+  font-size:12px;
+  color:var(--accent2);
+}
+.tag-remove {
+  background:none;
+  border:none;
+  color:var(--accent2);
+  cursor:pointer;
+  font-size:14px;
+  padding:0;
+  line-height:1;
+  opacity:0.7;
+}
+.tag-add-btn {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 14px;
+  color:var(--text-dim);
+  font-size:14px;
+  cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  white-space:nowrap;
+  transition:all 0.15s;
+}
+.tag-add-btn:hover { border-color:var(--accent); color:var(--accent2); }
+
+.modal-footer {
+  padding:16px 20px;
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom));
+}
+.save-btn {
+  width:100%;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border:none;
+  border-radius:12px;
+  padding:15px;
+  color:white;
+  font-size:15px;
+  font-weight:500;
+  font-family:'Noto Sans KR',sans-serif;
+  cursor:pointer;
+  transition:opacity 0.2s;
+}
+.save-btn:hover { opacity:0.9; }
+
+/* ===== 채팅 화면 ===== */
+#chat-screen {
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  z-index:150;
+  display:none;
+  flex-direction:column;
+}
+#chat-screen.active { display:flex; }
+
+.chat-header {
+  height:var(--header-h);
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  gap:12px;
+  background:rgba(19,19,26,0.95);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.chat-header-avatar {
+  width:38px;
+  height:38px;
+  border-radius:10px;
+  background:var(--surface2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:20px;
+  overflow:hidden;
+  flex-shrink:0;
+  border:1px solid var(--border);
+}
+.chat-header-avatar img { width:100%; height:100%; object-fit:cover; }
+.chat-header-info { flex:1; min-width:0; }
+.chat-header-name {
+  font-family:'Nanum Myeongjo',serif;
+  font-size:16px;
+  font-weight:700;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.chat-header-genre { font-size:11px; color:var(--accent2); }
+
+.messages {
+  flex:1;
+  overflow-y:auto;
+  padding:16px 14px;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  -webkit-overflow-scrolling:touch;
+}
+
+.msg {
+  display:flex;
+  gap:8px;
+  max-width:88%;
+  animation:fadeUp 0.25s ease both;
+}
+.msg.user { align-self:flex-end; flex-direction:row-reverse; }
+.msg.ai { align-self:flex-start; }
+
+.msg-avatar {
+  width:30px;
+  height:30px;
+  border-radius:8px;
+  background:var(--surface2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:15px;
+  flex-shrink:0;
+  align-self:flex-end;
+  overflow:hidden;
+  border:1px solid var(--border);
+}
+.msg-avatar img { width:100%; height:100%; object-fit:cover; }
+
+.msg-content { display:flex; flex-direction:column; gap:4px; }
+.msg.user .msg-content { align-items:flex-end; }
+
+.msg-bubble {
+  padding:11px 14px;
+  border-radius:16px;
+  font-size:14px;
+  line-height:1.7;
+  white-space:pre-wrap;
+  word-break:break-word;
+}
+.msg.user .msg-bubble {
+  background:#1e1756;
+  border:1px solid rgba(124,106,247,0.3);
+  border-bottom-right-radius:4px;
+}
+.msg.ai .msg-bubble {
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-bottom-left-radius:4px;
+}
+
+.msg-actions {
+  display:flex;
+  gap:6px;
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.msg:hover .msg-actions { opacity:1; }
+.msg-action-btn {
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:6px;
+  padding:3px 8px;
+  font-size:11px;
+  color:var(--text-dim);
+  cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  transition:all 0.15s;
+}
+.msg-action-btn:hover { color:var(--accent2); border-color:var(--accent); }
+
+.typing-wrap { display:flex; gap:8px; align-self:flex-start; }
+.typing-indicator {
+  padding:12px 16px;
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:16px;
+  border-bottom-left-radius:4px;
+  display:flex;
+  gap:4px;
+  align-items:center;
+}
+.dot {
+  width:7px; height:7px;
+  border-radius:50%;
+  background:var(--text-dim);
+  animation:bounce 1.2s infinite;
+}
+.dot:nth-child(2) { animation-delay:0.2s; }
+.dot:nth-child(3) { animation-delay:0.4s; }
+
+.chat-input-area {
+  padding:10px 12px;
+  background:rgba(19,19,26,0.95);
+  backdrop-filter:blur(20px);
+  border-top:1px solid var(--border);
+  display:flex;
+  gap:8px;
+  align-items:flex-end;
+  flex-shrink:0;
+  padding-bottom:calc(10px + env(safe-area-inset-bottom));
+}
+.chat-input {
+  flex:1;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:14px;
+  padding:11px 14px;
+  color:var(--text);
+  font-size:14px;
+  font-family:'Noto Sans KR',sans-serif;
+  outline:none;
+  resize:none;
+  max-height:120px;
+  line-height:1.5;
+  transition:border-color 0.2s;
+}
+.chat-input:focus { border-color:var(--accent); }
+.send-btn {
+  width:42px; height:42px;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  flex-shrink:0;
+  transition:opacity 0.2s;
+}
+.send-btn:hover { opacity:0.85; }
+.send-btn:disabled { opacity:0.35; cursor:not-allowed; }
+.send-btn svg { width:18px; height:18px; fill:white; }
+
+/* 나레이션 vs 대화 토글 */
+.chat-mode-bar {
+  display:flex;
+  gap:6px;
+  padding:8px 12px 0;
+  background:rgba(19,19,26,0.95);
+}
+.mode-btn {
+  flex:1;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:7px;
+  font-size:11px;
+  color:var(--text-dim);
+  cursor:pointer;
+  font-family:'Noto Sans KR',sans-serif;
+  transition:all 0.15s;
+  text-align:center;
+}
+.mode-btn.active {
+  background:rgba(124,106,247,0.15);
+  border-color:var(--accent);
+  color:var(--accent2);
+}
+
+/* ===== 캐릭터 상세 모달 ===== */
+#char-detail {
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  z-index:140;
+  display:none;
+  flex-direction:column;
+}
+#char-detail.active { display:flex; }
+
+.detail-cover {
+  width:100%;
+  height:50dvh;
+  object-fit:cover;
+  background:var(--surface2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:80px;
+  flex-shrink:0;
+  position:relative;
+}
+.detail-cover img { width:100%; height:100%; object-fit:cover; }
+.detail-cover-back {
+  position:absolute;
+  top:16px;
+  left:16px;
+  width:36px; height:36px;
+  background:rgba(0,0,0,0.6);
+  backdrop-filter:blur(10px);
+  border:none;
+  border-radius:10px;
+  color:white;
+  font-size:18px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.detail-body {
+  flex:1;
+  overflow-y:auto;
+  padding:20px;
+}
+.detail-name {
+  font-family:'Nanum Myeongjo',serif;
+  font-size:26px;
+  font-weight:800;
+  margin-bottom:4px;
+}
+.detail-genre { font-size:12px; color:var(--accent2); margin-bottom:8px; }
+.detail-tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px; }
+.detail-desc { font-size:14px; color:var(--text-dim); line-height:1.7; }
+
+.detail-footer {
+  padding:16px;
+  border-top:1px solid var(--border);
+  display:flex;
+  gap:10px;
+  flex-shrink:0;
+  padding-bottom:calc(16px + env(safe-area-inset-bottom));
+}
+.detail-chat-btn {
+  flex:1;
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border:none;
+  border-radius:12px;
+  padding:15px;
+  color:white;
+  font-size:15px;
+  font-weight:500;
+  font-family:'Noto Sans KR',sans-serif;
+  cursor:pointer;
+}
+.detail-bookmark-btn {
+  width:50px;
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  font-size:22px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:all 0.2s;
+}
+.detail-bookmark-btn.active { border-color:var(--gold); background:rgba(251,191,36,0.1); }
+
+/* ===== 유저 설정 모달 ===== */
+#user-modal {
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  backdrop-filter:blur(8px);
+  z-index:200;
+  display:none;
+  align-items:flex-end;
+}
+#user-modal.active { display:flex; }
+
+/* ===== 토스트 ===== */
+.toast {
+  position:fixed;
+  bottom:calc(var(--tab-h) + 16px);
+  left:50%;
+  transform:translateX(-50%) translateY(10px);
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:10px;
+  padding:10px 18px;
+  font-size:13px;
+  color:var(--text);
+  opacity:0;
+  transition:all 0.25s;
+  z-index:300;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ===== 애니메이션 ===== */
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to { opacity:1; transform:translateY(0); }
+}
+@keyframes bounce {
+  0%,60%,100% { transform:translateY(0); }
+  30% { transform:translateY(-5px); }
+}
+
+/* 스크롤바 */
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+</style>
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ===== 홈 탭 ===== -->
+  <div id="page-home" class="page active">
+    <div class="page-header">
+      <div class="page-title">이야기 세계</div>
+      <button class="header-btn" onclick="showSearch()">🔍</button>
+    </div>
+    <div class="page-body">
+      <div class="home-banner">
+        <div class="home-banner-title">✨ 나만의 이야기를 시작해보세요</div>
+        <div class="home-banner-sub">AI 캐릭터와 함께하는 인터랙티브 스토리</div>
+      </div>
+      <div class="section-label">내 캐릭터</div>
+      <div class="char-grid" id="homeGrid"></div>
+    </div>
+  </div>
+
+  <!-- ===== 대화 탭 ===== -->
+  <div id="page-chat" class="page">
+    <div class="page-header">
+      <div class="page-title">대화</div>
+    </div>
+    <div class="page-body">
+      <div class="chat-list" id="chatListEl"></div>
+    </div>
+  </div>
+
+  <!-- ===== 제작 탭 ===== -->
+  <div id="page-create" class="page">
+    <div class="page-header">
+      <div class="page-title">제작</div>
+    </div>
+    <div class="page-body">
+      <div id="createList"></div>
+    </div>
+    <button class="fab" onclick="openCreateModal()">+</button>
+  </div>
+
+  <!-- ===== 마이페이지 탭 ===== -->
+  <div id="page-my" class="page">
+    <div class="page-header">
+      <div class="page-title">마이페이지</div>
+    </div>
+    <div class="page-body">
+      <div class="my-profile-card">
+        <div class="my-avatar">👤</div>
+        <div>
+          <div class="my-name" id="myName">사용자</div>
+          <div class="my-sub" id="myUsername">@user</div>
+        </div>
+      </div>
+
+      <div class="api-section">
+        <div class="api-section-title">OpenRouter API 키</div>
+        <div class="api-row">
+          <input type="password" class="api-input" id="apiKeyInput" placeholder="sk-or-v1-...">
+          <button class="api-save-btn" onclick="saveApiKey()">저장</button>
+        </div>
+        <div class="api-hint">
+          무료 발급: <a href="https://openrouter.ai/keys" target="_blank">openrouter.ai/keys</a><br>
+          가입 후 Create Key → 복사 → 붙여넣기
+        </div>
+      </div>
+
+      <div class="settings-card">
+        <div class="settings-label">설정</div>
+        <div class="settings-item" onclick="openUserModal()">
+          <div class="settings-item-icon">✏️</div>
+          <div class="settings-item-label">프로필 편집</div>
+          <div class="settings-item-value">›</div>
+        </div>
+        <div class="settings-item" onclick="clearAllData()">
+          <div class="settings-item-icon">🗑️</div>
+          <div class="settings-item-label">모든 데이터 초기화</div>
+          <div class="settings-item-value" style="color:var(--danger)">›</div>
+        </div>
+      </div>
+
+      <div style="text-align:center;padding:20px;color:var(--text-dim2);font-size:12px;">
+        이야기 세계 v2.0<br>AI 스토리 챗
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 탭바 ===== -->
+  <nav class="tabbar">
+    <button class="tab-btn active" onclick="switchTab('home',this)">
+      <div class="tab-icon">🏠</div>
+      <div class="tab-label">홈</div>
+    </button>
+    <button class="tab-btn" onclick="switchTab('chat',this)">
+      <div class="tab-icon">💬</div>
+      <div class="tab-label">대화</div>
+    </button>
+    <button class="tab-btn" onclick="switchTab('create',this)">
+      <div class="tab-icon">✚</div>
+      <div class="tab-label">제작</div>
+    </button>
+    <button class="tab-btn" onclick="switchTab('my',this)">
+      <div class="tab-icon">👤</div>
+      <div class="tab-label">마이페이지</div>
+    </button>
+  </nav>
+</div>
+
+<!-- ===== 캐릭터 상세 ===== -->
+<div id="char-detail">
+  <div class="detail-cover" id="detailCover">
+    <button class="detail-cover-back" onclick="closeDetail()">←</button>
+  </div>
+  <div class="detail-body">
+    <div class="detail-name" id="detailName"></div>
+    <div class="detail-genre" id="detailGenre"></div>
+    <div class="detail-tags" id="detailTags"></div>
+    <div class="detail-desc" id="detailDesc"></div>
+  </div>
+  <div class="detail-footer">
+    <button class="detail-bookmark-btn" id="detailBookmark" onclick="toggleBookmark()">🔖</button>
+    <button class="detail-chat-btn" onclick="startChatFromDetail()">대화 시작하기</button>
+  </div>
+</div>
+
+<!-- ===== 채팅 화면 ===== -->
+<div id="chat-screen">
+  <div class="chat-header">
+    <button class="header-btn" onclick="closeChat()" style="margin-right:4px">←</button>
+    <div class="chat-header-avatar" id="chatHeaderAvatar"></div>
+    <div class="chat-header-info">
+      <div class="chat-header-name" id="chatHeaderName"></div>
+      <div class="chat-header-genre" id="chatHeaderGenre"></div>
+    </div>
+    <button class="header-btn" onclick="regenLast()" title="재생성">🔄</button>
+    <button class="header-btn" onclick="clearChat()" title="초기화">🗑</button>
+  </div>
+  <div class="messages" id="messages"></div>
+  <div class="chat-mode-bar">
+    <button class="mode-btn active" id="modeDialogue" onclick="setMode('dialogue')">💬 대화 모드</button>
+    <button class="mode-btn" id="modeNarration" onclick="setMode('narration')">📖 나레이션 모드</button>
+  </div>
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="chatInput" placeholder="메시지를 입력하세요..." rows="1"
+      onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button class="send-btn" id="sendBtn" onclick="sendMsg()">
+      <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- ===== 캐릭터 만들기 모달 ===== -->
+<div class="modal-overlay" id="createModal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">캐릭터 만들기</div>
+      <button class="modal-close" onclick="closeCreateModal()">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <div class="form-label">캐릭터 이미지</div>
+        <div class="image-upload-area" id="imageUploadArea" onclick="triggerImageUpload()">
+          <div id="imageUploadContent">
+            <div class="image-upload-icon">🖼️</div>
+            <div class="image-upload-text">이미지 업로드</div>
+            <div class="image-upload-hint">탭해서 갤러리에서 선택</div>
+          </div>
+        </div>
+        <input type="file" id="imageFileInput" accept="image/*" onchange="handleImageUpload(event)">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">이모지 아이콘 (이미지 없을 때 표시)</div>
+        <div class="emoji-grid" id="emojiGrid"></div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">이름 *</div>
+        <input type="text" class="form-input" id="charName" placeholder="예: 아라, 이설, 제이든...">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">장르</div>
+        <select class="form-select" id="charGenre">
+          <option value="판타지">⚔️ 판타지 / 모험</option>
+          <option value="로맨스">💕 로맨스</option>
+          <option value="호러">🩸 호러 / 스릴러</option>
+          <option value="SF">🚀 SF / 미래</option>
+          <option value="현대">🏙️ 현대 / 일상</option>
+          <option value="무협">🥋 무협</option>
+          <option value="학원">🏫 학원</option>
+          <option value="기타">✨ 기타</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">한 줄 소개</div>
+        <input type="text" class="form-input" id="charDesc" placeholder="예: 100년만에 당신을 풀어준 관리자">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">해시태그</div>
+        <div class="tag-input-wrap">
+          <input type="text" class="form-input" id="tagInput" placeholder="태그 입력 후 추가" style="flex:1">
+          <button class="tag-add-btn" onclick="addTag()"># 추가</button>
+        </div>
+        <div class="tag-list" id="tagList"></div>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">캐릭터 설정 (성격, 말투, 배경) *</div>
+        <textarea class="form-textarea" id="charPersona" rows="5"
+          placeholder="예: 너의 이름은 이설. 냉혹한 마검사로 감정을 숨기는 법을 먼저 배웠다. 반말을 쓰고 자신을 '나'라고 칭한다. 상대에게 서서히 마음을 열어간다..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">배경 설정 (세계관, 상황)</div>
+        <textarea class="form-textarea" id="charWorld" rows="3"
+          placeholder="예: 마법이 존재하는 중세 왕국. 유저는 마왕을 물리치러 온 용사다..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">나(유저) 이름</div>
+        <input type="text" class="form-input" id="charUserName" placeholder="예: 셀레나, 용사, 탐정...">
+      </div>
+
+      <div class="form-group">
+        <div class="form-label">첫 인사말</div>
+        <textarea class="form-textarea" id="charGreeting" rows="3"
+          placeholder="예: ...왜 온 거야. 이 곳에 발을 들이는 자는 보통 살아 돌아가지 못하는데."></textarea>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveChar()">저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 유저 프로필 모달 ===== -->
+<div class="modal-overlay" id="userModal">
+  <div class="modal-sheet" style="max-height:50dvh">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">프로필 편집</div>
+      <button class="modal-close" onclick="closeUserModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <div class="form-label">닉네임</div>
+        <input type="text" class="form-input" id="userNameInput" placeholder="닉네임">
+      </div>
+      <div class="form-group">
+        <div class="form-label">아이디</div>
+        <input type="text" class="form-input" id="userIdInput" placeholder="@아이디">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveUserProfile()">저장</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const EMOJIS = ['🧝','🧛','🧙','👸','🤺','🥷','👨‍🚀','🧜','🐉','🌙','⚔️','💀','🌹','🔮','🗡️','🌊','🔥','❄️','🎭','👁️','🦊','🐺','🌸','⚡','🏮'];
+let selectedEmoji = EMOJIS[0];
+let chars = [];
+let currentChar = null;
+let currentCharIdx = -1;
+let chatHistory = [];
+let isLoading = false;
+let chatMode = 'dialogue'; // dialogue | narration
+let editingIdx = -1;
+let currentImageData = null;
+let bookmarks = [];
+let tags = [];
+
+// ===== 초기화 =====
+function init() {
+  chars = JSON.parse(localStorage.getItem('chars_v2') || '[]');
+  bookmarks = JSON.parse(localStorage.getItem('bookmarks') || '[]');
+  const profile = JSON.parse(localStorage.getItem('userProfile') || '{"name":"사용자","id":"@user"}');
+  document.getElementById('myName').textContent = profile.name;
+  document.getElementById('myUsername').textContent = profile.id;
+  document.getElementById('userNameInput').value = profile.name;
+  document.getElementById('userIdInput').value = profile.id;
+
+  const apiKey = localStorage.getItem('or_api_key');
+  if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+
+  buildEmojiGrid();
+  renderAll();
+}
+
+function buildEmojiGrid() {
+  const grid = document.getElementById('emojiGrid');
+  grid.innerHTML = '';
+  EMOJIS.forEach((e, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'emoji-btn' + (i === 0 ? ' selected' : '');
+    btn.textContent = e;
+    btn.onclick = () => {
+      document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedEmoji = e;
+    };
+    grid.appendChild(btn);
+  });
+}
+
+// ===== 탭 전환 =====
+function switchTab(name, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  renderAll();
+}
+
+// ===== 렌더링 =====
+function renderAll() {
+  renderHome();
+  renderChatList();
+  renderCreateList();
+}
+
+function renderHome() {
+  const grid = document.getElementById('homeGrid');
+  if (chars.length === 0) {
+    grid.innerHTML = `<div class="empty-home" style="grid-column:1/-1">
+      <div class="big-emoji">📖</div>
+      <p>아직 캐릭터가 없어요.<br>제작 탭에서 만들어보세요!</p>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = '';
+  chars.forEach((c, i) => {
+    const card = document.createElement('div');
+    card.className = 'char-grid-card';
+    const imgHtml = c.image
+      ? `<div class="char-grid-img"><img src="${c.image}" alt="${c.name}"></div>`
+      : `<div class="char-grid-img">${c.emoji || '🧝'}</div>`;
+    const tagsHtml = (c.tags || []).slice(0, 2).map(t => `<span class="tag">#${t}</span>`).join('');
+    card.innerHTML = `
+      ${imgHtml}
+      <div class="char-grid-info">
+        <div class="char-grid-name">${c.name}</div>
+        <div class="char-grid-desc">${c.desc || ''}</div>
+        <div class="char-grid-tags">${tagsHtml}</div>
+      </div>`;
+    card.onclick = () => openDetail(i);
+    grid.appendChild(card);
+  });
+}
+
+function renderChatList() {
+  const el = document.getElementById('chatListEl');
+  const withHistory = chars.filter(c => localStorage.getItem('chat_' + c.name));
+  if (withHistory.length === 0) {
+    el.innerHTML = `<div class="empty-chat"><div class="big-emoji">💬</div><p style="font-size:14px;color:var(--text-dim)">아직 대화 기록이 없어요</p></div>`;
+    return;
+  }
+  el.innerHTML = '';
+  withHistory.forEach(c => {
+    const history = JSON.parse(localStorage.getItem('chat_' + c.name) || '[]');
+    const last = history[history.length - 1];
+    const preview = last ? last.content.slice(0, 40) + (last.content.length > 40 ? '...' : '') : '';
+    const item = document.createElement('div');
+    item.className = 'chat-list-item';
+    const avatarHtml = c.image
+      ? `<img src="${c.image}" alt="${c.name}">`
+      : c.emoji || '🧝';
+    item.innerHTML = `
+      <div class="chat-list-avatar">${c.image ? `<img src="${c.image}">` : (c.emoji || '🧝')}</div>
+      <div class="chat-list-info">
+        <div class="chat-list-name">${c.name}</div>
+        <div class="chat-list-preview">${preview || '대화를 시작해보세요'}</div>
+      </div>`;
+    const idx = chars.indexOf(c);
+    item.onclick = () => startChat(idx);
+    el.appendChild(item);
+  });
+}
+
+function renderCreateList() {
+  const el = document.getElementById('createList');
+  if (chars.length === 0) {
+    el.innerHTML = `<div class="empty-chat"><div class="big-emoji">✨</div><p style="font-size:14px;color:var(--text-dim);text-align:center;padding:60px 20px">+ 버튼을 눌러<br>캐릭터를 만들어보세요!</p></div>`;
+    return;
+  }
+  const card = document.createElement('div');
+  card.className = 'create-card';
+  chars.forEach((c, i) => {
+    const item = document.createElement('div');
+    item.className = 'create-card-item';
+    const history = JSON.parse(localStorage.getItem('chat_' + c.name) || '[]');
+    item.innerHTML = `
+      <div class="create-card-avatar">${c.image ? `<img src="${c.image}">` : (c.emoji || '🧝')}</div>
+      <div class="create-card-info">
+        <div class="create-card-name">${c.name}</div>
+        <div class="create-card-stat">${c.genre} · 대화 ${history.length}개</div>
+      </div>
+      <div class="create-card-actions">
+        <button class="icon-btn" onclick="editChar(event,${i})">✏️</button>
+        <button class="icon-btn danger" onclick="deleteChar(event,${i})">🗑</button>
+      </div>`;
+    item.onclick = () => openDetail(i);
+    card.appendChild(item);
+  });
+  el.innerHTML = '';
+  el.appendChild(card);
+}
+
+// ===== 캐릭터 상세 =====
+function openDetail(i) {
+  currentCharIdx = i;
+  const c = chars[i];
+  const cover = document.getElementById('detailCover');
+
+  // 이미지 or 이모지
+  if (c.image) {
+    cover.innerHTML = `<button class="detail-cover-back" onclick="closeDetail()">←</button><img src="${c.image}" style="width:100%;height:100%;object-fit:cover">`;
+  } else {
+    cover.innerHTML = `<button class="detail-cover-back" onclick="closeDetail()">←</button>${c.emoji || '🧝'}`;
+  }
+
+  document.getElementById('detailName').textContent = c.name;
+  document.getElementById('detailGenre').textContent = c.genre;
+  document.getElementById('detailTags').innerHTML = (c.tags || []).map(t => `<span class="tag">#${t}</span>`).join('');
+  document.getElementById('detailDesc').textContent = c.persona ? c.persona.slice(0, 120) + '...' : '';
+
+  const bm = document.getElementById('detailBookmark');
+  bm.className = 'detail-bookmark-btn' + (bookmarks.includes(i) ? ' active' : '');
+
+  document.getElementById('char-detail').classList.add('active');
+}
+
+function closeDetail() {
+  document.getElementById('char-detail').classList.remove('active');
+}
+
+function toggleBookmark() {
+  const idx = bookmarks.indexOf(currentCharIdx);
+  if (idx === -1) { bookmarks.push(currentCharIdx); showToast('🔖 즐겨찾기 추가'); }
+  else { bookmarks.splice(idx, 1); showToast('즐겨찾기 해제'); }
+  localStorage.setItem('bookmarks', JSON.stringify(bookmarks));
+  document.getElementById('detailBookmark').className = 'detail-bookmark-btn' + (bookmarks.includes(currentCharIdx) ? ' active' : '');
+}
+
+function startChatFromDetail() {
+  closeDetail();
+  startChat(currentCharIdx);
+}
+
+// ===== 채팅 =====
+function startChat(i) {
+  currentChar = chars[i];
+  currentCharIdx = i;
+  chatMode = 'dialogue';
+  document.getElementById('modeDialogue').classList.add('active');
+  document.getElementById('modeNarration').classList.remove('active');
+
+  const avatar = document.getElementById('chatHeaderAvatar');
+  if (currentChar.image) {
+    avatar.innerHTML = `<img src="${currentChar.image}">`;
+  } else {
+    avatar.textContent = currentChar.emoji || '🧝';
+  }
+  document.getElementById('chatHeaderName').textContent = currentChar.name;
+  document.getElementById('chatHeaderGenre').textContent = currentChar.genre;
+
+  // 대화 로드
+  const msgs = document.getElementById('messages');
+  msgs.innerHTML = '';
+  chatHistory = JSON.parse(localStorage.getItem('chat_' + currentChar.name) || '[]');
+  chatHistory.forEach(m => addBubble(m.role === 'user' ? 'user' : 'ai', m.content, false));
+
+  if (chatHistory.length === 0 && currentChar.greeting) {
+    addBubble('ai', currentChar.greeting, false);
+  }
+
+  document.getElementById('chat-screen').classList.add('active');
+  document.getElementById('chatInput').value = '';
+  scrollBottom();
+}
+
+function closeChat() {
+  document.getElementById('chat-screen').classList.remove('active');
+  renderAll();
+}
+
+function setMode(m) {
+  chatMode = m;
+  document.getElementById('modeDialogue').classList.toggle('active', m === 'dialogue');
+  document.getElementById('modeNarration').classList.toggle('active', m === 'narration');
+  showToast(m === 'dialogue' ? '💬 대화 모드' : '📖 나레이션 모드');
+}
+
+function addBubble(role, text, animate = true) {
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'msg ' + role;
+  if (!animate) wrap.style.animation = 'none';
+
+  const avatarHtml = role === 'ai'
+    ? `<div class="msg-avatar">${currentChar.image ? `<img src="${currentChar.image}">` : (currentChar.emoji || '🧝')}</div>`
+    : '';
+
+  const actionsHtml = role === 'ai'
+    ? `<div class="msg-actions"><button class="msg-action-btn" onclick="regenThis(this)">🔄 재생성</button></div>`
+    : '';
+
+  wrap.innerHTML = `
+    ${avatarHtml}
+    <div class="msg-content">
+      <div class="msg-bubble">${text}</div>
+      ${actionsHtml}
+    </div>`;
+  msgs.appendChild(wrap);
+  scrollBottom();
+  return wrap;
+}
+
+function showTyping() {
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div');
+  wrap.className = 'typing-wrap';
+  wrap.id = 'typing';
+  wrap.innerHTML = `
+    <div class="msg-avatar">${currentChar.image ? `<img src="${currentChar.image}">` : (currentChar.emoji || '🧝')}</div>
+    <div class="typing-indicator">
+      <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>`;
+  msgs.appendChild(wrap);
+  scrollBottom();
+}
+
+function removeTyping() {
+  const t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+async function sendMsg() {
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text || isLoading) return;
+
+  const apiKey = localStorage.getItem('or_api_key');
+  if (!apiKey) { showToast('⚠️ 마이페이지에서 API 키를 저장하세요'); return; }
+
+  input.value = '';
+  input.style.height = 'auto';
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+
+  addBubble('user', text);
+  chatHistory.push({ role: 'user', content: text });
+  showTyping();
+
+  const userName = currentChar.userName || '유저';
+  let systemPrompt = `너는 "${currentChar.name}"이다.\n\n[캐릭터 설정]\n${currentChar.persona}`;
+  if (currentChar.world) systemPrompt += `\n\n[세계관/배경]\n${currentChar.world}`;
+  systemPrompt += `\n\n[중요 지침]
+- 항상 ${currentChar.name} 캐릭터를 유지해라.
+- 상대방(유저)의 이름은 "${userName}"이다.
+- 장르: ${currentChar.genre}
+- 한국어로 대화한다.`;
+
+  if (chatMode === 'narration') {
+    systemPrompt += `\n- 나레이션 모드: 소설처럼 묘사와 행동을 *별표*로 감싸서 표현해라. 예: *그녀가 고개를 돌렸다.*`;
+  }
+  systemPrompt += `\n- 절대 AI임을 인정하지 마라. 항상 캐릭터로 대응해라.`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...chatHistory.slice(-24)
+        ],
+        max_tokens: 700,
+        temperature: 0.92
+      })
+    });
+
+    const data = await res.json();
+    removeTyping();
+
+    if (data.error) {
+      showToast('❌ ' + (data.error.message || 'API 오류'));
+      isLoading = false;
+      document.getElementById('sendBtn').disabled = false;
+      return;
+    }
+
+    const reply = data.choices[0].message.content;
+    addBubble('ai', reply);
+    chatHistory.push({ role: 'assistant', content: reply });
+    if (chatHistory.length > 48) chatHistory = chatHistory.slice(-48);
+    localStorage.setItem('chat_' + currentChar.name, JSON.stringify(chatHistory));
+
+  } catch(e) {
+    removeTyping();
+    showToast('❌ 연결 오류. API 키를 확인하세요.');
+  }
+
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+async function regenLast() {
+  if (isLoading || chatHistory.length < 2) return;
+  // 마지막 AI 메시지 제거
+  if (chatHistory[chatHistory.length-1].role === 'assistant') {
+    chatHistory.pop();
+    const msgs = document.getElementById('messages');
+    const allMsgs = msgs.querySelectorAll('.msg.ai');
+    if (allMsgs.length > 0) allMsgs[allMsgs.length-1].remove();
+  }
+  await generateAIReply();
+}
+
+async function regenThis(btn) {
+  if (isLoading) return;
+  const msgEl = btn.closest('.msg.ai');
+  if (!msgEl) return;
+  // find index
+  const msgs = document.getElementById('messages');
+  const allAi = [...msgs.querySelectorAll('.msg.ai')];
+  const idx = allAi.indexOf(msgEl);
+  if (idx === allAi.length - 1) regenLast();
+}
+
+async function generateAIReply() {
+  const apiKey = localStorage.getItem('or_api_key');
+  if (!apiKey) return;
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  showTyping();
+
+  const userName = currentChar.userName || '유저';
+  let systemPrompt = `너는 "${currentChar.name}"이다.\n\n[캐릭터 설정]\n${currentChar.persona}`;
+  if (currentChar.world) systemPrompt += `\n\n[세계관/배경]\n${currentChar.world}`;
+  systemPrompt += `\n\n[중요 지침]\n- 항상 캐릭터를 유지해라.\n- 상대방 이름: "${userName}"\n- 한국어로 대화\n- AI임을 인정하지 마라.`;
+
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama3-8b-8192',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...chatHistory.slice(-24)
+        ],
+        max_tokens: 700,
+        temperature: 0.95
+      })
+    });
+    const data = await res.json();
+    removeTyping();
+    if (!data.error) {
+      const reply = data.choices[0].message.content;
+      addBubble('ai', reply);
+      chatHistory.push({ role: 'assistant', content: reply });
+      localStorage.setItem('chat_' + currentChar.name, JSON.stringify(chatHistory));
+    }
+  } catch(e) {
+    removeTyping();
+    showToast('❌ 연결 오류');
+  }
+  isLoading = false;
+  document.getElementById('sendBtn').disabled = false;
+}
+
+function clearChat() {
+  if (!confirm('대화를 초기화할까요?')) return;
+  chatHistory = [];
+  localStorage.removeItem('chat_' + currentChar.name);
+  document.getElementById('messages').innerHTML = '';
+  if (currentChar.greeting) addBubble('ai', currentChar.greeting, false);
+  showToast('대화 초기화됨');
+}
+
+// ===== 캐릭터 만들기/편집 =====
+function openCreateModal(idx = -1) {
+  editingIdx = idx;
+  tags = [];
+
+  if (idx >= 0) {
+    const c = chars[idx];
+    document.getElementById('modalTitle').textContent = '캐릭터 편집';
+    document.getElementById('charName').value = c.name;
+    document.getElementById('charGenre').value = c.genre;
+    document.getElementById('charDesc').value = c.desc || '';
+    document.getElementById('charPersona').value = c.persona;
+    document.getElementById('charWorld').value = c.world || '';
+    document.getElementById('charGreeting').value = c.greeting || '';
+    document.getElementById('charUserName').value = c.userName || '';
+    tags = [...(c.tags || [])];
+    currentImageData = c.image || null;
+    selectedEmoji = c.emoji || EMOJIS[0];
+
+    if (c.image) {
+      const area = document.getElementById('imageUploadArea');
+      area.classList.add('has-image');
+      area.innerHTML = `<img src="${c.image}"><button class="image-change-btn" onclick="event.stopPropagation();triggerImageUpload()">변경</button>`;
+    }
+  } else {
+    document.getElementById('modalTitle').textContent = '캐릭터 만들기';
+    document.getElementById('charName').value = '';
+    document.getElementById('charGenre').value = '판타지';
+    document.getElementById('charDesc').value = '';
+    document.getElementById('charPersona').value = '';
+    document.getElementById('charWorld').value = '';
+    document.getElementById('charGreeting').value = '';
+    document.getElementById('charUserName').value = '';
+    currentImageData = null;
+    selectedEmoji = EMOJIS[0];
+    const area = document.getElementById('imageUploadArea');
+    area.classList.remove('has-image');
+    area.innerHTML = `<div id="imageUploadContent"><div class="image-upload-icon">🖼️</div><div class="image-upload-text">이미지 업로드</div><div class="image-upload-hint">탭해서 갤러리에서 선택</div></div>`;
+  }
+
+  renderTags();
+  buildEmojiGrid();
+  // 선택된 이모지 표시
+  setTimeout(() => {
+    const btns = document.querySelectorAll('.emoji-btn');
+    btns.forEach(b => {
+      if (b.textContent === selectedEmoji) b.classList.add('selected');
+      else b.classList.remove('selected');
+    });
+  }, 50);
+
+  document.getElementById('createModal').classList.add('active');
+}
+
+function closeCreateModal() {
+  document.getElementById('createModal').classList.remove('active');
+}
+
+function triggerImageUpload() {
+  document.getElementById('imageFileInput').click();
+}
+
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    currentImageData = ev.target.result;
+    const area = document.getElementById('imageUploadArea');
+    area.classList.add('has-image');
+    area.innerHTML = `<img src="${currentImageData}"><button class="image-change-btn" onclick="event.stopPropagation();triggerImageUpload()">변경</button>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addTag() {
+  const input = document.getElementById('tagInput');
+  const val = input.value.trim().replace(/^#/, '');
+  if (!val || tags.includes(val)) { input.value = ''; return; }
+  tags.push(val);
+  input.value = '';
+  renderTags();
+}
+
+function removeTag(t) {
+  tags = tags.filter(x => x !== t);
+  renderTags();
+}
+
+function renderTags() {
+  const el = document.getElementById('tagList');
+  el.innerHTML = tags.map(t => `
+    <div class="tag-item">#${t}
+      <button class="tag-remove" onclick="removeTag('${t}')">✕</button>
+    </div>`).join('');
+}
+
+document.getElementById('tagInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); addTag(); }
+});
+
+function saveChar() {
+  const name = document.getElementById('charName').value.trim();
+  const persona = document.getElementById('charPersona').value.trim();
+  if (!name) { showToast('이름을 입력하세요'); return; }
+  if (!persona) { showToast('캐릭터 설정을 입력하세요'); return; }
+
+  const c = {
+    name,
+    genre: document.getElementById('charGenre').value,
+    desc: document.getElementById('charDesc').value.trim(),
+    persona,
+    world: document.getElementById('charWorld').value.trim(),
+    greeting: document.getElementById('charGreeting').value.trim(),
+    userName: document.getElementById('charUserName').value.trim(),
+    emoji: selectedEmoji,
+    image: currentImageData,
+    tags: [...tags]
+  };
+
+  if (editingIdx >= 0) {
+    chars[editingIdx] = c;
+    showToast('✅ 캐릭터 수정됨');
+  } else {
+    chars.push(c);
+    showToast('✅ 캐릭터 저장됨');
+  }
+
+  localStorage.setItem('chars_v2', JSON.stringify(chars));
+  closeCreateModal();
+  renderAll();
+}
+
+function editChar(e, i) {
+  e.stopPropagation();
+  openCreateModal(i);
+}
+
+function deleteChar(e, i) {
+  e.stopPropagation();
+  if (!confirm(`"${chars[i].name}"을(를) 삭제할까요?`)) return;
+  localStorage.removeItem('chat_' + chars[i].name);
+  chars.splice(i, 1);
+  localStorage.setItem('chars_v2', JSON.stringify(chars));
+  renderAll();
+  showToast('삭제됨');
+}
+
+// ===== 유저 프로필 =====
+function openUserModal() {
+  document.getElementById('userModal').classList.add('active');
+}
+function closeUserModal() {
+  document.getElementById('userModal').classList.remove('active');
+}
+function saveUserProfile() {
+  const name = document.getElementById('userNameInput').value.trim() || '사용자';
+  const id = document.getElementById('userIdInput').value.trim() || '@user';
+  localStorage.setItem('userProfile', JSON.stringify({ name, id }));
+  document.getElementById('myName').textContent = name;
+  document.getElementById('myUsername').textContent = id;
+  closeUserModal();
+  showToast('✅ 프로필 저장됨');
+}
+
+// ===== 설정 =====
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { showToast('API 키를 입력하세요'); return; }
+  localStorage.setItem('or_api_key', key);
+  showToast('✅ API 키 저장됨');
+}
+
+function clearAllData() {
+  if (!confirm('모든 데이터를 초기화할까요? (캐릭터, 대화 전부 삭제)')) return;
+  localStorage.clear();
+  chars = [];
+  bookmarks = [];
+  renderAll();
+  showToast('초기화됨');
+}
+
+function showSearch() {
+  showToast('🔍 검색 기능은 준비 중이에요');
+}
+
+// ===== 유틸 =====
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
+}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
+function scrollBottom() {
+  const msgs = document.getElementById('messages');
+  setTimeout(() => msgs.scrollTop = msgs.scrollHeight, 50);
+}
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// 모달 바깥 클릭 닫기
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => {
+    if (e.target === el) el.classList.remove('active');
+  });
+});
+
+init();
+</script>
+</body>
+</html>
