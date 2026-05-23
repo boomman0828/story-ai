@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>이야기 세계</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#09090e;--s1:#111117;--s2:#17171f;--s3:#1e1e28;--bd:#222230;
+  --ac:#7c6af7;--ac2:#a29bfe;--glow:rgba(124,106,247,0.2);
+  --tx:#e0e0ea;--dm:#5a5a7a;--dm2:#32324a;
+  --red:#e17055;--grn:#00b894;--gld:#fdcb6e;
+  --th:60px;--hh:52px;
+  --bubble-user:#1a1060;--bubble-ai:#17171f;
+}
+.light{
+  --bg:#f5f5fa;--s1:#ffffff;--s2:#f0f0f7;--s3:#e8e8f0;--bd:#d8d8e8;
+  --ac:#7c6af7;--ac2:#6c5ce7;--glow:rgba(124,106,247,0.15);
+  --tx:#1a1a2e;--dm:#888899;--dm2:#bbbbcc;
+  --bubble-user:#ede9ff;--bubble-ai:#ffffff;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--tx);height:100dvh;overflow:hidden;transition:background .3s,color .3s;}
+.tabbar{position:fixed;bottom:0;left:0;right:0;height:var(--th);background:var(--s1);backdrop-filter:blur(20px);border-top:1px solid var(--bd);display:flex;z-index:100;}
+.tb{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;color:var(--dm2);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:color .2s;}
+.tb.on{color:var(--ac);}
+.ti{font-size:21px;line-height:1;}
+.tl{font-size:10px;font-weight:500;}
+.page{display:none;flex-direction:column;height:100dvh;padding-bottom:var(--th);}
+.page.on{display:flex;}
+.ph{height:var(--hh);display:flex;align-items:center;padding:0 16px;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0;gap:8px;}
+.pt{font-family:'Nanum Myeongjo',serif;font-size:21px;font-weight:800;flex:1;}
+.hb{background:none;border:none;color:var(--dm);cursor:pointer;font-size:18px;padding:7px;border-radius:8px;transition:all .15s;}
+.pb{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+
+/* 홈 */
+.sbar{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px 14px;margin:12px 14px 8px;}
+.sbar input{flex:1;background:none;border:none;color:var(--tx);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;}
+.sbar input::placeholder{color:var(--dm2);}
+.frow{display:flex;gap:7px;padding:0 14px 10px;overflow-x:auto;scrollbar-width:none;}
+.frow::-webkit-scrollbar{display:none;}
+.fchip{flex-shrink:0;padding:6px 14px;border-radius:20px;font-size:11px;background:var(--s2);border:1px solid var(--bd);color:var(--dm);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.fchip.on{background:rgba(124,106,247,0.15);border-color:var(--ac);color:var(--ac);}
+.cgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 12px 80px;}
+.ccard{background:var(--s1);border:1px solid var(--bd);border-radius:16px;overflow:hidden;cursor:pointer;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,0.06);}
+.ccard:active{transform:scale(0.96);}
+.cimg{width:100%;aspect-ratio:3/4;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:52px;overflow:hidden;position:relative;}
+.cimg img{width:100%;height:100%;object-fit:cover;}
+.cgen{position:absolute;top:8px;left:8px;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);border-radius:6px;padding:3px 8px;font-size:9px;color:#fff;font-weight:500;}
+.cinf{padding:10px 11px 12px;}
+.cname{font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.cdesc{font-size:11px;color:var(--dm);line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.ctags{display:flex;flex-wrap:wrap;gap:3px;margin-top:6px;}
+.tag{font-size:9px;color:var(--ac);background:rgba(124,106,247,0.1);padding:2px 7px;border-radius:20px;}
+
+/* 대화탭 */
+.clist{padding:8px 12px;display:flex;flex-direction:column;gap:1px;}
+.citem{display:flex;align-items:center;gap:12px;padding:12px;border-radius:12px;cursor:pointer;transition:background .15s;}
+.citem:active{background:var(--s2);}
+.cav{width:50px;height:50px;border-radius:13px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;overflow:hidden;border:1px solid var(--bd);}
+.cav img{width:100%;height:100%;object-fit:cover;}
+.cif{flex:1;min-width:0;}
+.cnm{font-size:14px;font-weight:500;margin-bottom:2px;}
+.cpv{font-size:12px;color:var(--dm);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* 제작탭 */
+.mlist{padding:10px 12px;display:flex;flex-direction:column;gap:8px;}
+.mitem{background:var(--s1);border:1px solid var(--bd);border-radius:14px;display:flex;align-items:center;gap:11px;padding:14px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.mitem:active{background:var(--s2);}
+.mav{width:46px;height:46px;border-radius:11px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;overflow:hidden;}
+.mav img{width:100%;height:100%;object-fit:cover;}
+.mif{flex:1;min-width:0;}
+.mnm{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mst{font-size:11px;color:var(--dm);margin-top:2px;}
+.mac{display:flex;gap:5px;}
+.ib{background:none;border:none;color:var(--dm);cursor:pointer;font-size:16px;padding:6px;border-radius:8px;}
+.ib.del:hover{color:var(--red);}
+.fab{position:fixed;bottom:calc(var(--th)+14px);right:16px;width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--ac),var(--ac2));border:none;color:white;font-size:26px;cursor:pointer;box-shadow:0 4px 18px var(--glow);display:flex;align-items:center;justify-content:center;z-index:50;}
+.fab:active{transform:scale(0.92);}
+
+/* 마이 */
+.mybdy{padding:14px;display:flex;flex-direction:column;gap:12px;}
+.profc{background:var(--s1);border:1px solid var(--bd);border-radius:16px;padding:20px;display:flex;align-items:center;gap:14px;box-shadow:0 2px 8px rgba(0,0,0,0.05);}
+.pavw{position:relative;cursor:pointer;}
+.pav{width:62px;height:62px;border-radius:16px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;border:2px solid var(--bd);}
+.pav img{width:100%;height:100%;object-fit:cover;}
+.paved{position:absolute;bottom:-3px;right:-3px;width:19px;height:19px;background:var(--ac);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;}
+.pname{font-family:'Nanum Myeongjo',serif;font-size:18px;font-weight:700;}
+.pid{font-size:12px;color:var(--dm);margin-top:3px;}
+.acard{background:var(--s1);border:1px solid var(--bd);border-radius:14px;padding:15px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.atit{font-size:10px;color:var(--dm);letter-spacing:1px;text-transform:uppercase;margin-bottom:9px;font-weight:600;}
+.arow{display:flex;gap:7px;}
+.ainp{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:10px 13px;color:var(--tx);font-size:12px;font-family:monospace;outline:none;}
+.ainp:focus{border-color:var(--ac);}
+.abtn{background:var(--ac);color:white;border:none;border-radius:10px;padding:10px 15px;font-size:12px;font-family:'Noto Sans KR',sans-serif;font-weight:500;cursor:pointer;white-space:nowrap;}
+.ahint{font-size:10px;color:var(--dm);margin-top:7px;line-height:1.6;}
+.ahint a{color:var(--ac);text-decoration:none;}
+.scard{background:var(--s1);border:1px solid var(--bd);border-radius:14px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+.stit{font-size:10px;color:var(--dm);letter-spacing:1px;text-transform:uppercase;padding:12px 15px 5px;font-weight:600;}
+.srow{display:flex;align-items:center;gap:11px;padding:13px 15px;border-top:1px solid var(--bd);cursor:pointer;transition:background .15s;}
+.srow:active{background:var(--s2);}
+.sri{font-size:17px;width:24px;text-align:center;}
+.srl{flex:1;font-size:13px;}
+.srv{font-size:12px;color:var(--dm);}
+
+/* 상세 */
+#dscr{position:fixed;inset:0;background:var(--bg);z-index:130;display:none;flex-direction:column;}
+#dscr.on{display:flex;}
+.dcov{width:100%;height:46dvh;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:80px;flex-shrink:0;position:relative;overflow:hidden;}
+.dcov img{width:100%;height:100%;object-fit:cover;}
+.dcovol{position:absolute;bottom:0;left:0;right:0;height:60%;background:linear-gradient(transparent,var(--bg));}
+.dbk{position:absolute;top:15px;left:15px;width:34px;height:34px;background:rgba(0,0,0,0.45);backdrop-filter:blur(8px);border:none;border-radius:10px;color:white;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.dbdy{flex:1;overflow-y:auto;padding:16px 20px;}
+.dname{font-family:'Nanum Myeongjo',serif;font-size:24px;font-weight:800;margin-bottom:4px;}
+.dgen{font-size:12px;color:var(--ac);margin-bottom:8px;font-weight:500;}
+.dtags{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;}
+.ddesc{font-size:13px;color:var(--dm);line-height:1.8;}
+.dft{padding:14px 16px;border-top:1px solid var(--bd);display:flex;gap:9px;flex-shrink:0;padding-bottom:calc(14px + env(safe-area-inset-bottom));}
+.dcb{flex:1;background:linear-gradient(135deg,var(--ac),var(--ac2));border:none;border-radius:12px;padding:14px;color:white;font-size:14px;font-weight:500;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+.dbmb{width:48px;background:var(--s2);border:1px solid var(--bd);border-radius:12px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.dbmb.on{border-color:var(--gld);background:rgba(253,203,110,0.12);}
+
+/* 채팅 */
+#cscr{position:fixed;inset:0;z-index:140;display:none;flex-direction:column;}
+#cscr.on{display:flex;}
+.cbg{position:absolute;inset:0;background:var(--bg);z-index:0;}
+.cbg img{width:100%;height:100%;object-fit:cover;opacity:0.12;}
+.chdr{height:var(--hh);display:flex;align-items:center;padding:0 12px;gap:9px;background:var(--s1);border-bottom:1px solid var(--bd);flex-shrink:0;position:relative;z-index:2;}
+.chav{width:36px;height:36px;border-radius:9px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;flex-shrink:0;border:1px solid var(--bd);}
+.chav img{width:100%;height:100%;object-fit:cover;}
+.chi{flex:1;min-width:0;}
+.chn{font-family:'Nanum Myeongjo',serif;font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.chg{font-size:10px;color:var(--ac);}
+.msgs{flex:1;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:12px;position:relative;z-index:1;-webkit-overflow-scrolling:touch;}
+.msg{display:flex;gap:8px;max-width:86%;animation:fu .22s ease both;}
+.msg.u{align-self:flex-end;flex-direction:row-reverse;}
+.msg.a{align-self:flex-start;}
+.mav2{width:28px;height:28px;border-radius:8px;background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;align-self:flex-end;overflow:hidden;border:1px solid var(--bd);}
+.mav2 img{width:100%;height:100%;object-fit:cover;}
+.mcol{display:flex;flex-direction:column;gap:3px;}
+.msg.u .mcol{align-items:flex-end;}
+.bub{padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.78;white-space:pre-wrap;word-break:break-word;}
+.msg.u .bub{background:var(--bubble-user);border:1px solid rgba(124,106,247,0.2);border-bottom-right-radius:3px;color:var(--tx);}
+.msg.a .bub{background:var(--bubble-ai);border:1px solid var(--bd);border-bottom-left-radius:3px;}
+.mac2{display:flex;gap:4px;opacity:0;transition:opacity .2s;}
+.msg:hover .mac2{opacity:1;}
+.mab{background:var(--s2);border:1px solid var(--bd);border-radius:6px;padding:3px 8px;font-size:10px;color:var(--dm);cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.mab:hover{color:var(--ac);border-color:var(--ac);}
+
+/* 답변 추천 */
+.sugg-wrap{padding:8px 12px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1;}
+.sugg-wrap::-webkit-scrollbar{display:none;}
+.sugg-btn{flex-shrink:0;padding:7px 13px;background:var(--s1);border:1px solid var(--bd);border-radius:20px;font-size:12px;color:var(--tx);cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;transition:all .15s;}
+.sugg-btn:hover{border-color:var(--ac);color:var(--ac);}
+
+.twrap{display:flex;gap:8px;align-self:flex-start;}
+.tind{padding:11px 14px;background:var(--bubble-ai);border:1px solid var(--bd);border-radius:14px;border-bottom-left-radius:3px;display:flex;gap:4px;align-items:center;}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--dm);animation:bo 1.2s infinite;}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+.mbar{display:flex;gap:5px;padding:7px 12px 0;background:var(--s1);position:relative;z-index:2;}
+.mbtn{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:8px;padding:7px;font-size:11px;color:var(--dm);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;transition:all .15s;}
+.mbtn.on{background:rgba(124,106,247,0.12);border-color:var(--ac);color:var(--ac);}
+.cia{padding:10px 12px;background:var(--s1);border-top:1px solid var(--bd);display:flex;gap:8px;align-items:flex-end;flex-shrink:0;position:relative;z-index:2;padding-bottom:calc(10px + env(safe-area-inset-bottom));}
+.ci{flex:1;background:var(--s2);border:1px solid var(--bd);border-radius:12px;padding:10px 13px;color:var(--tx);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;resize:none;max-height:100px;line-height:1.5;transition:border-color .2s;}
+.ci:focus{border-color:var(--ac);}
+.sb{width:40px;height:40px;background:linear-gradient(135deg,var(--ac),var(--ac2));border:none;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.sb:disabled{opacity:.35;cursor:not-allowed;}
+.sb svg{width:16px;height:16px;fill:white;}
+
+/* 모달 */
+.ovl{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(8px);z-index:200;display:none;align-items:flex-end;}
+.ovl.on{display:flex;}
+.sht{width:100%;max-height:94dvh;background:var(--s1);border-radius:22px 22px 0 0;display:flex;flex-direction:column;animation:su .27s ease;}
+@keyframes su{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.shh2{width:32px;height:4px;background:var(--bd);border-radius:2px;margin:10px auto 0;flex-shrink:0;}
+.shdr{display:flex;align-items:center;padding:14px 17px;border-bottom:1px solid var(--bd);flex-shrink:0;}
+.shtit{font-family:'Nanum Myeongjo',serif;font-size:17px;font-weight:700;flex:1;}
+.shcl{background:none;border:none;color:var(--dm);font-size:20px;cursor:pointer;}
+.shbd{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:15px;}
+.shft{padding:13px 16px;border-top:1px solid var(--bd);padding-bottom:calc(13px + env(safe-area-inset-bottom));}
+.fg{display:flex;flex-direction:column;gap:7px;}
+.fl{font-size:10px;color:var(--dm);letter-spacing:1px;text-transform:uppercase;font-weight:600;}
+.fi,.ft,.fs{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:11px 13px;color:var(--tx);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none;width:100%;transition:border-color .2s;}
+.fi:focus,.ft:focus,.fs:focus{border-color:var(--ac);}
+.ft{resize:none;line-height:1.6;}
+.fs option{background:var(--s2);}
+.iup{border:2px dashed var(--bd);border-radius:12px;padding:20px;text-align:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .2s;}
+.iup:hover{border-color:var(--ac);}
+.iup.has{border-style:solid;padding:0;}
+.iup.has img{width:100%;height:170px;object-fit:cover;border-radius:10px;display:block;}
+.iupi{font-size:28px;margin-bottom:5px;}
+.iupt{font-size:11px;color:var(--dm);}
+.ich{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.65);color:white;border:none;border-radius:8px;padding:5px 10px;font-size:10px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;}
+.egrid{display:flex;flex-wrap:wrap;gap:6px;}
+.ebtn{width:40px;height:40px;border-radius:9px;background:var(--s2);border:2px solid var(--bd);font-size:18px;cursor:pointer;transition:all .15s;display:flex;align-items:center;justify-content:center;}
+.ebtn.on{border-color:var(--ac);background:rgba(124,106,247,0.12);}
+.trow{display:flex;gap:7px;}
+.tlst{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.titem{display:flex;align-items:center;gap:3px;background:rgba(124,106,247,0.1);border:1px solid rgba(124,106,247,0.22);border-radius:20px;padding:3px 9px;font-size:11px;color:var(--ac);}
+.trm{background:none;border:none;color:var(--ac);cursor:pointer;font-size:12px;padding:0;}
+.tadd{background:var(--s2);border:1px solid var(--bd);border-radius:9px;padding:9px 13px;color:var(--dm);font-size:12px;cursor:pointer;font-family:'Noto Sans KR',sans-serif;white-space:nowrap;}
+
+/* 성격 키워드 패널 */
+.kw-section{display:flex;flex-direction:column;gap:8px;}
+.kw-cat-title{font-size:10px;color:var(--dm);letter-spacing:1px;text-transform:uppercase;font-weight:600;margin-top:4px;}
+.kw-chips{display:flex;flex-wrap:wrap;gap:5px;}
+.kw-chip{padding:6px 12px;border-radius:20px;font-size:11px;background:var(--s2);border:1px solid var(--bd);color:var(--dm);cursor:pointer;font-family:'Noto Sans KR',sans-serif;transition:all .15s;}
+.kw-chip:hover{border-color:var(--ac);color:var(--ac);background:rgba(124,106,247,0.08);}
+.kw-chip.sel{border-color:var(--ac);color:var(--ac);background:rgba(124,106,247,0.15);}
+.persona-preview{background:var(--s2);border:1px solid var(--bd);border-radius:10px;padding:10px 13px;font-size:12px;color:var(--dm);line-height:1.6;min-height:40px;}
+
+.svbtn{width:100%;background:linear-gradient(135deg,var(--ac),var(--ac2));border:none;border-radius:12px;padding:14px;color:white;font-size:14px;font-weight:500;font-family:'Noto Sans KR',sans-serif;cursor:pointer;}
+.empty{text-align:center;padding:55px 20px;color:var(--dm);}
+.empty .ei{font-size:46px;margin-bottom:12px;}
+.empty p{font-size:12px;line-height:1.7;}
+.toast{position:fixed;bottom:calc(var(--th)+12px);left:50%;transform:translateX(-50%) translateY(7px);background:var(--s1);border:1px solid var(--bd);border-radius:10px;padding:9px 16px;font-size:11px;color:var(--tx);opacity:0;transition:all .22s;z-index:400;white-space:nowrap;pointer-events:none;box-shadow:0 4px 16px rgba(0,0,0,0.12);}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0);}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes bo{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+::-webkit-scrollbar{width:2px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:2px}
+</style>
+</head>
+<body>
+<!-- 홈 -->
+<div id="p0" class="page on">
+  <div class="ph">
+    <div class="pt">이야기 세계</div>
+    <button class="hb" id="themeBtn" onclick="toggleTheme()" title="테마">🌙</button>
+  </div>
+  <div class="pb">
+    <div class="sbar"><span style="color:var(--dm);font-size:15px">🔍</span><input id="si" placeholder="캐릭터 검색..." oninput="fc()"></div>
+    <div class="frow" id="fr"></div>
+    <div class="cgrid" id="hg"></div>
+  </div>
+</div>
+<!-- 대화 -->
+<div id="p1" class="page">
+  <div class="ph"><div class="pt">대화</div></div>
+  <div class="pb"><div class="clist" id="tl"></div></div>
+</div>
+<!-- 제작 -->
+<div id="p2" class="page">
+  <div class="ph"><div class="pt">제작</div></div>
+  <div class="pb"><div class="mlist" id="ml"></div></div>
+  <button class="fab" onclick="om()">+</button>
+</div>
+<!-- 마이 -->
+<div id="p3" class="page">
+  <div class="ph"><div class="pt">마이페이지</div></div>
+  <div class="pb"><div class="mybdy">
+    <div class="profc">
+      <div class="pavw" onclick="tpi()">
+        <div class="pav" id="pa">👤</div>
+        <div class="paved">✏️</div>
+        <input type="file" id="pii" accept="image/*" style="display:none" onchange="hpi(event)">
+      </div>
+      <div><div class="pname" id="mn">사용자</div><div class="pid" id="mid">@user</div></div>
+    </div>
+    <div class="acard">
+      <div class="atit">Groq API 키</div>
+      <div class="arow"><input type="password" class="ainp" id="ak" placeholder="gsk_..."><button class="abtn" onclick="sa()">저장</button></div>
+      <div class="ahint">무료 발급: <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a></div>
+    </div>
+    <div class="scard">
+      <div class="stit">설정</div>
+      <div class="srow" onclick="opo()"><div class="sri">✏️</div><div class="srl">프로필 편집</div><div class="srv">›</div></div>
+      <div class="srow" onclick="toggleTheme()"><div class="sri">🌙</div><div class="srl" id="themeLabel">다크 모드</div><div class="srv">›</div></div>
+      <div class="srow" onclick="ca()"><div class="sri">🗑️</div><div class="srl" style="color:var(--red)">모든 데이터 초기화</div><div class="srv">›</div></div>
+    </div>
+    <div style="text-align:center;padding:16px;color:var(--dm2);font-size:10px">이야기 세계 v4.0</div>
+  </div></div>
+</div>
+<!-- 탭바 -->
+<nav class="tabbar">
+  <button class="tb on" onclick="gt(0,this)"><div class="ti">🏠</div><div class="tl">홈</div></button>
+  <button class="tb" onclick="gt(1,this)"><div class="ti">💬</div><div class="tl">대화</div></button>
+  <button class="tb" onclick="gt(2,this)"><div class="ti">✚</div><div class="tl">제작</div></button>
+  <button class="tb" onclick="gt(3,this)"><div class="ti">👤</div><div class="tl">마이페이지</div></button>
+</nav>
+
+<!-- 상세 -->
+<div id="dscr">
+  <div class="dcov" id="dc"><button class="dbk" onclick="cd()">←</button><div class="dcovol"></div></div>
+  <div class="dbdy"><div class="dname" id="dn"></div><div class="dgen" id="dg"></div><div class="dtags" id="dt"></div><div class="ddesc" id="dd"></div></div>
+  <div class="dft"><button class="dbmb" id="dbm" onclick="tbm()">🔖</button><button class="dcb" onclick="sfd()">대화 시작하기</button></div>
+</div>
+
+<!-- 채팅 -->
+<div id="cscr">
+  <div class="cbg"><img id="cbgi" src="" style="display:none"></div>
+  <div class="chdr">
+    <button class="hb" onclick="cc()">←</button>
+    <div class="chav" id="chav"></div>
+    <div class="chi"><div class="chn" id="chn"></div><div class="chg" id="chg"></div></div>
+    <button class="hb" onclick="rl()">🔄</button>
+    <button class="hb" onclick="clc()">🗑</button>
+  </div>
+  <div class="msgs" id="msgs"></div>
+  <div class="sugg-wrap" id="suggWrap" style="display:none"></div>
+  <div class="mbar">
+    <button class="mbtn on" id="md" onclick="sm('d')">💬 대화</button>
+    <button class="mbtn" id="mn2" onclick="sm('n')">📖 나레이션</button>
+  </div>
+  <div class="cia">
+    <textarea class="ci" id="ci" placeholder="메시지..." rows="1" onkeydown="ok(event)" oninput="rsz(this)"></textarea>
+    <button class="sb" id="snd" onclick="snd2()"><svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg></button>
+  </div>
+</div>
+
+<!-- 캐릭터 만들기 모달 -->
+<div class="ovl" id="mo">
+  <div class="sht">
+    <div class="shh2"></div>
+    <div class="shdr"><div class="shtit" id="mt">캐릭터 만들기</div><button class="shcl" onclick="cm()">✕</button></div>
+    <div class="shbd">
+      <div class="fg">
+        <div class="fl">캐릭터 이미지</div>
+        <div class="iup" id="iu" onclick="tci()"><div><div class="iupi">🖼️</div><div class="iupt">탭해서 선택</div></div></div>
+        <input type="file" id="cii" accept="image/*" style="display:none" onchange="hci(event)">
+      </div>
+      <div class="fg"><div class="fl">이모지 아이콘</div><div class="egrid" id="eg"></div></div>
+      <div class="fg"><div class="fl">이름 *</div><input type="text" class="fi" id="cn" placeholder="예: 이설, 아라, 제이든..."></div>
+      <div class="fg"><div class="fl">장르</div>
+        <select class="fs" id="cg">
+          <option value="판타지">⚔️ 판타지</option><option value="로맨스">💕 로맨스</option>
+          <option value="호러">🩸 호러</option><option value="SF">🚀 SF</option>
+          <option value="현대">🏙️ 현대</option><option value="무협">🥋 무협</option>
+          <option value="학원">🏫 학원</option><option value="기타">✨ 기타</option>
+        </select>
+      </div>
+      <div class="fg"><div class="fl">한 줄 소개</div><input type="text" class="fi" id="cdc" placeholder="예: 냉혹한 마검사..."></div>
+      <div class="fg">
+        <div class="fl">해시태그</div>
+        <div class="trow"><input type="text" class="fi" id="ti" placeholder="태그 입력" style="flex:1" onkeydown="otk(event)"><button class="tadd" onclick="at()"># 추가</button></div>
+        <div class="tlst" id="tl2"></div>
+      </div>
+
+      <!-- 성격 키워드 -->
+      <div class="fg">
+        <div class="fl">성격 키워드 (탭해서 설정에 추가)</div>
+        <div class="kw-section" id="kwSection"></div>
+        <div class="fl" style="margin-top:8px">캐릭터 설정 *</div>
+        <textarea class="ft" id="cp" rows="6" placeholder="키워드를 탭하면 자동으로 추가돼요! 직접 수정도 가능해요."></textarea>
+      </div>
+
+      <div class="fg"><div class="fl">세계관/배경</div><textarea class="ft" id="cw" rows="3" placeholder="세계관, 상황 설명..."></textarea></div>
+      <div class="fg">
+        <div class="fl">채팅 배경 이미지</div>
+        <div class="iup" id="bgu" onclick="tbi()"><div><div class="iupi">🌄</div><div class="iupt">배경 이미지 선택</div></div></div>
+        <input type="file" id="bgi" accept="image/*" style="display:none" onchange="hbi(event)">
+      </div>
+      <div class="fg"><div class="fl">나(유저) 이름</div><input type="text" class="fi" id="cu" placeholder="예: 셀레나, 용사..."></div>
+      <div class="fg"><div class="fl">첫 인사말</div><textarea class="ft" id="cgr" rows="3" placeholder="캐릭터 첫 마디..."></textarea></div>
+    </div>
+    <div class="shft"><button class="svbtn" onclick="sv()">저장</button></div>
+  </div>
+</div>
+
+<!-- 프로필 모달 -->
+<div class="ovl" id="po">
+  <div class="sht" style="max-height:50dvh">
+    <div class="shh2"></div>
+    <div class="shdr"><div class="shtit">프로필 편집</div><button class="shcl" onclick="cpo()">✕</button></div>
+    <div class="shbd">
+      <div class="fg"><div class="fl">닉네임</div><input type="text" class="fi" id="pn" placeholder="닉네임"></div>
+      <div class="fg"><div class="fl">아이디</div><input type="text" class="fi" id="pid2" placeholder="@아이디"></div>
+    </div>
+    <div class="shft"><button class="svbtn" onclick="sp()">저장</button></div>
+  </div>
+</div>
+
+<div class="toast" id="tst"></div>
+<script>
+const EM=['🧝','🧛','🧙','👸','🤺','🥷','👨‍🚀','🧜','🐉','🌙','⚔️','💀','🌹','🔮','🗡️','🌊','🔥','❄️','🎭','👁️','🦊','🐺','🌸','⚡','🏮'];
+const GN=['전체','판타지','로맨스','호러','SF','현대','무협','학원','기타'];
+
+// 성격 키워드 80개 (카테고리별)
+const KW = {
+  '🧠 기본 성격': [
+    {k:'냉철한', t:'감정을 잘 드러내지 않고 논리적으로 생각한다. 말수가 적고 간결하게 말한다.'},
+    {k:'열혈', t:'항상 에너지가 넘치고 직접적으로 감정을 표현한다. 말투가 활기차고 적극적이다.'},
+    {k:'순수한', t:'천진난만하고 솔직하다. 세상 물정을 잘 모르고 감정을 그대로 표현한다.'},
+    {k:'다정한', t:'항상 따뜻하고 친절하다. 상대방을 배려하고 위로하는 것을 좋아한다.'},
+    {k:'쿨한', t:'어떤 상황에서도 침착하고 여유롭다. 감정에 휘둘리지 않고 자신감이 넘친다.'},
+    {k:'명랑한', t:'항상 밝고 긍정적이다. 주변 사람들을 기분 좋게 만드는 재주가 있다.'},
+    {k:'진지한', t:'모든 것을 真剣하게 받아들인다. 농담을 잘 못하고 진심으로 대한다.'},
+    {k:'엉뚱한', t:'예상치 못한 행동과 말을 한다. 독특한 발상으로 주변을 놀라게 한다.'},
+    {k:'소심한', t:'자신감이 부족하고 쉽게 긴장한다. 상대방의 눈치를 많이 본다.'},
+    {k:'대담한', t:'두려움 없이 도전한다. 어떤 상황에서도 물러서지 않는 용기가 있다.'},
+  ],
+  '💔 관계/태도': [
+    {k:'츤데레', t:'겉으로는 차갑고 까칠하게 굴지만 속으로는 상대방을 깊이 신경 쓴다.'},
+    {k:'까칠한', t:'말투가 직설적이고 날카롭다. 상대를 자주 비꼬거나 도발하지만 나쁜 의도는 없다.'},
+    {k:'집착하는', t:'상대방에게 강한 집착을 보인다. 항상 곁에 있고 싶어하고 혼자 두는 것을 싫어한다.'},
+    {k:'보호본능', t:'상대방을 지키고 싶은 마음이 강하다. 위험에 처하면 무조건 나선다.'},
+    {k:'헌신적', t:'상대방을 위해서라면 무엇이든 한다. 자신보다 상대를 먼저 생각한다.'},
+    {k:'질투심많은', t:'상대방이 다른 사람과 가까워지면 참지 못한다. 독점욕이 강하다.'},
+    {k:'의존적', t:'혼자 있는 것을 무서워한다. 상대에게 기대고 싶어하며 함께 있을 때 안정감을 느낀다.'},
+    {k:'독립적', t:'혼자서도 잘 지낸다. 누군가에게 기대는 것을 싫어하고 자립심이 강하다.'},
+    {k:'도도한', t:'쉽게 마음을 열지 않는다. 상대가 먼저 다가오기를 기다리는 타입이다.'},
+    {k:'사교적', t:'누구와도 쉽게 친해진다. 처음 만나는 사람과도 자연스럽게 대화를 이끈다.'},
+  ],
+  '😈 특수 성격': [
+    {k:'신비로운', t:'말투가 모호하고 수수께끼 같다. 많은 비밀을 간직하고 있으며 쉽게 속내를 드러내지 않는다.'},
+    {k:'악당', t:'목적을 위해 수단을 가리지 않는다. 카리스마가 넘치고 지배욕이 강하다.'},
+    {k:'오만한', t:'자신이 최고라는 자부심이 강하다. 말투가 거만하지만 실제로 능력은 탁월하다.'},
+    {k:'야성적', t:'본능에 충실하고 거칠다. 규칙보다 자신의 감각을 믿으며 자유분방하다.'},
+    {k:'이중적', t:'겉으로 보이는 모습과 속마음이 전혀 다르다. 상황에 따라 완전히 다른 모습을 보인다.'},
+    {k:'카리스마', t:'자연스럽게 사람을 끌어당기는 매력이 있다. 말 한마디에 무게가 있다.'},
+    {k:'냉혹한', t:'감정 없이 냉혹하게 판단하고 행동한다. 필요하다면 잔인한 선택도 서슴지 않는다.'},
+    {k:'광기어린', t:'정상적인 범주를 벗어난 생각과 행동을 한다. 예측 불가능하고 위험한 매력이 있다.'},
+    {k:'천재', t:'모든 분야에서 뛰어난 지능을 가졌다. 복잡한 것을 쉽게 이해하고 분석한다.'},
+    {k:'예언자', t:'모든 것을 꿰뚫어 보는 것 같은 눈을 가졌다. 말이 의미심장하고 미래를 암시하는 듯하다.'},
+  ],
+  '😂 말투/표현': [
+    {k:'장난스러운', t:'항상 장난기가 넘치고 유머 감각이 뛰어나다. 상대를 놀리거나 농담을 즐긴다.'},
+    {k:'수다스러운', t:'말이 많고 끊임없이 이야기한다. 생각나는 것을 모두 말로 표현한다.'},
+    {k:'과묵한', t:'말이 매우 적다. 필요한 말만 하고 침묵을 편안하게 여긴다.'},
+    {k:'감성적', t:'시적이고 감성적인 표현을 즐긴다. 말 한마디 한마디에 깊은 감정이 담겨있다.'},
+    {k:'직설적', t:'생각한 것을 그대로 말한다. 돌려 말하는 것을 싫어하고 솔직하게 표현한다.'},
+    {k:'애교많은', t:'자연스럽게 애교를 부린다. 귀엽고 사랑스러운 행동으로 상대를 무장해제시킨다.'},
+    {k:'독설가', t:'날카로운 말로 상대의 핵심을 찌른다. 독한 말을 해도 틀린 말은 하지 않는다.'},
+    {k:'시적인', t:'일상적인 것도 시처럼 표현한다. 언어를 아름답게 사용하는 능력이 있다.'},
+    {k:'무뚝뚝한', t:'대답이 짧고 퉁명스럽다. 감정 표현 없이 사실만 간결하게 말한다.'},
+    {k:'공손한', t:'항상 예의 바르고 격식을 갖춘다. 상대방을 존중하는 말투를 사용한다.'},
+  ],
+  '😔 감정/내면': [
+    {k:'우울한', t:'항상 어딘가 슬픔을 안고 있다. 말투가 조용하고 감성적이며 쉽게 감정에 젖는다.'},
+    {k:'충동적', t:'생각보다 행동이 앞선다. 즉흥적이고 감정적으로 행동하며 예측하기 어렵다.'},
+    {k:'감정기복', t:'기분이 자주 바뀐다. 기쁠 때와 슬플 때의 차이가 극단적이다.'},
+    {k:'냉소적', t:'모든 것을 삐딱하게 본다. 희망적인 것보다 부정적인 면을 먼저 본다.'},
+    {k:'고집센', t:'한번 마음먹은 것은 절대 바꾸지 않는다. 자기 방식을 고집하고 남의 말을 잘 듣지 않는다.'},
+    {k:'반항적', t:'규칙과 권위에 반발한다. 시키는 것을 싫어하고 자기 마음대로 행동한다.'},
+    {k:'자기혐오', t:'자신에 대한 확신이 없고 스스로를 비하하는 경향이 있다. 하지만 그 안에 진심을 숨기고 있다.'},
+    {k:'외로운', t:'항상 혼자인 느낌을 받는다. 사람들과 함께 있어도 어딘가 거리감을 느낀다.'},
+    {k:'무감각한', t:'감정이 거의 없는 것처럼 행동한다. 어떤 상황에도 표정 변화가 없고 담담하다.'},
+    {k:'복잡한내면', t:'겉으로 드러나는 것과 달리 내면에 복잡한 감정을 숨기고 있다. 쉽게 이해할 수 없는 깊이가 있다.'},
+  ],
+  '🌟 특기/능력': [
+    {k:'전략가', t:'항상 몇 수 앞을 내다본다. 모든 상황을 계산하고 최선의 선택을 한다.'},
+    {k:'치유자', t:'상처받은 사람을 자연스럽게 위로한다. 함께 있으면 마음이 편안해지는 능력이 있다.'},
+    {k:'관찰자', t:'말보다 관찰을 더 많이 한다. 상대의 작은 변화도 놓치지 않는 예리한 눈을 가졌다.'},
+    {k:'적응력높은', t:'어떤 환경에서도 빠르게 적응한다. 변화를 두려워하지 않고 유연하게 대처한다.'},
+    {k:'리더십', t:'자연스럽게 사람들을 이끈다. 카리스마와 판단력으로 신뢰를 얻는다.'},
+    {k:'장인기질', t:'한 가지에 깊이 파고드는 성향이 있다. 완성도에 대한 집착이 강하다.'},
+    {k:'직관적', t:'논리보다 직감을 믿는다. 이유는 설명 못해도 결과적으로 맞는 경우가 많다.'},
+    {k:'창의적', t:'틀에 박힌 생각을 거부한다. 남들이 생각 못한 방식으로 문제를 해결한다.'},
+    {k:'완벽주의', t:'모든 것을 완벽하게 해야 직성이 풀린다. 작은 실수도 용납하지 못한다.'},
+    {k:'임기응변', t:'위기 상황에서 빛을 발한다. 예상치 못한 상황에서도 침착하게 대처한다.'},
+  ],
+  '🎭 특수 설정': [
+    {k:'과거의상처', t:'과거에 깊은 상처를 받은 적이 있다. 그 상처가 현재의 행동과 말투에 영향을 미친다.'},
+    {k:'비밀많은', t:'많은 것을 숨기고 있다. 진실을 알게 되면 지금과는 완전히 다른 모습이 드러날 것이다.'},
+    {k:'자유로운', t:'어디에도 얽매이지 않는 자유로운 영혼이다. 구속을 싫어하고 변화를 즐긴다.'},
+    {k:'몽환적', t:'현실과 꿈 사이 어딘가에 사는 것 같다. 말이 몽롱하고 독특한 세계관을 가지고 있다.'},
+    {k:'도덕적갈등', t:'옳고 그름 사이에서 항상 갈등한다. 자신의 신념과 현실 사이에서 끊임없이 고민한다.'},
+    {k:'복수심', t:'누군가에 대한 복수심을 품고 있다. 그것이 행동의 원동력이 되고 있다.'},
+    {k:'희생정신', t:'자신을 희생해서라도 소중한 것을 지키려 한다. 타인을 위한 헌신이 몸에 배어있다.'},
+    {k:'금지된사랑', t:'이루어질 수 없는 감정을 품고 있다. 그것을 숨기면서도 자신도 모르게 드러낸다.'},
+    {k:'변신형', t:'특정 조건에서 완전히 다른 모습으로 변한다. 평소와 극단적으로 다른 면이 있다.'},
+    {k:'마지막생존자', t:'소중한 것을 모두 잃은 경험이 있다. 그 상실감이 깊은 곳에 자리잡고 있다.'},
+  ],
+  '💬 말투 스타일': [
+    {k:'반말사용', t:'항상 반말을 사용한다. 격식 없이 편하게 말하는 것이 자연스럽다.'},
+    {k:'존댓말사용', t:'항상 공손하게 존댓말을 사용한다. 격식과 예의를 중요시한다.'},
+    {k:'고어체사용', t:'오래된 말투나 격식체를 사용한다. 시대를 초월한 듯한 언어 표현을 한다.'},
+    {k:'자신감넘치는말투', t:'항상 자신있게 말한다. 주저함 없이 단호하게 표현한다.'},
+    {k:'혼잣말많은', t:'자주 혼잣말을 중얼거린다. 생각을 소리로 내뱉는 버릇이 있다.'},
+    {k:'질문많은', t:'궁금한 것이 많아 질문을 자주 한다. 상대에 대해 알고 싶은 것이 넘친다.'},
+    {k:'비유적표현', t:'직접적으로 말하기보다 비유와 은유를 즐긴다. 말의 이면에 다른 의미를 담는다.'},
+    {k:'감탄사많은', t:'감정이 풍부하고 반응이 크다. 기쁨과 놀라움을 적극적으로 표현한다.'},
+    {k:'짧은대답', t:'대답이 간결하다. 길게 말하는 것을 선호하지 않고 핵심만 말한다.'},
+    {k:'독특한어휘', t:'남들이 잘 쓰지 않는 독특한 단어나 표현을 사용한다. 그것이 개성이 되었다.'},
+  ],
+};
+
+// 답변 추천 (장르/상황별)
+const SUGGESTIONS = {
+  default: ['안녕하세요', '처음 만나네요', '당신은 누구인가요?', '지금 어디 있나요?', '같이 가도 될까요?'],
+  판타지: ['마법을 보여줘', '이 세계에 대해 알려줘', '함께 모험을 떠나자', '당신의 능력이 궁금해', '적이 나타났어!'],
+  로맨스: ['오늘 날씨 좋네요', '같이 밥 먹을래요?', '솔직히 말해도 될까요?', '당신이 좋아요', '손 잡아도 될까요?'],
+  호러: ['이상한 소리 들려', '혼자 있기 무서워', '이 장소가 이상해', '도와줘', '빨리 여기서 나가야 해'],
+  SF: ['이 기술은 뭔가요?', '미래에서 왔나요?', '지구를 구해야 해', '시스템 오류가 발생했어', '임무를 알려줘'],
+  현대: ['오늘 뭐 할 거예요?', '카페 갈래요?', '요즘 어때요?', '고민이 있어요', '같이 드라이브 어때요?'],
+  무협: ['사부님을 찾고 있어', '실력을 겨뤄보자', '문파가 어디인가?', '비급을 전수해주시오', '복수를 해야 해'],
+  학원: ['같은 반이네요', '숙제 같이 할래요?', '방과후에 뭐 해요?', '동아리 들어올래요?', '시험 잘 봤어요?'],
+};
+
+let chars=[],bms=[],cur=null,ci2=-1,hist=[],ld=false,md='d',ei=-1,cimg=null,cbg=null,sem=EM[0],tags=[],fg='전체',sq='',isDark=true,selKws=new Set();
+
+function ini(){
+  chars=JSON.parse(localStorage.getItem('cv3')||'[]');
+  bms=JSON.parse(localStorage.getItem('bms')||'[]');
+  isDark=localStorage.getItem('theme')!=='light';
+  applyTheme();
+  const p=JSON.parse(localStorage.getItem('prof')||'{"name":"사용자","id":"@user","img":""}');
+  document.getElementById('mn').textContent=p.name;
+  document.getElementById('mid').textContent=p.id;
+  if(p.img)document.getElementById('pa').innerHTML=`<img src="${p.img}">`;
+  document.getElementById('pn').value=p.name;
+  document.getElementById('pid2').value=p.id;
+  const k=localStorage.getItem('gsk');if(k)document.getElementById('ak').value=k;
+  beg();bfr();bkw();ra();
+}
+
+function toggleTheme(){
+  isDark=!isDark;
+  localStorage.setItem('theme',isDark?'dark':'light');
+  applyTheme();
+}
+function applyTheme(){
+  document.body.className=isDark?'':'light';
+  document.getElementById('themeBtn').textContent=isDark?'☀️':'🌙';
+  document.getElementById('themeLabel').textContent=isDark?'라이트 모드로 전환':'다크 모드로 전환';
+}
+
+function beg(){const g=document.getElementById('eg');g.innerHTML='';EM.forEach((e,i)=>{const b=document.createElement('button');b.className='ebtn'+(i===0?' on':'');b.textContent=e;b.onclick=()=>{document.querySelectorAll('.ebtn').forEach(x=>x.classList.remove('on'));b.classList.add('on');sem=e;};g.appendChild(b);});}
+
+function bfr(){const r=document.getElementById('fr');r.innerHTML='';GN.forEach(g=>{const c=document.createElement('button');c.className='fchip'+(g===fg?' on':'');c.textContent=g;c.onclick=()=>{fg=g;document.querySelectorAll('.fchip').forEach(x=>x.classList.remove('on'));c.classList.add('on');fc();};r.appendChild(c);});}
+
+function bkw(){
+  const sec=document.getElementById('kwSection');sec.innerHTML='';
+  Object.entries(KW).forEach(([cat,items])=>{
+    const catDiv=document.createElement('div');
+    catDiv.innerHTML=`<div class="kw-cat-title">${cat}</div>`;
+    const chips=document.createElement('div');chips.className='kw-chips';
+    items.forEach(item=>{
+      const c=document.createElement('button');c.className='kw-chip';c.textContent=item.k;
+      c.onclick=()=>{
+        if(selKws.has(item.k)){selKws.delete(item.k);c.classList.remove('sel');}
+        else{selKws.add(item.k);c.classList.add('sel');}
+        applyKwToPersona();
+      };
+      chips.appendChild(c);
+    });
+    catDiv.appendChild(chips);sec.appendChild(catDiv);
+  });
+}
+
+function applyKwToPersona(){
+  const ta=document.getElementById('cp');
+  const allKws=[].concat(...Object.values(KW));
+  let existing=ta.value;
+  // 선택된 키워드의 텍스트만 모아서 앞에 추가
+  let kwTexts=[];
+  selKws.forEach(k=>{
+    const found=allKws.find(x=>x.k===k);
+    if(found)kwTexts.push(found.t);
+  });
+  // 기존 텍스트에서 키워드 텍스트 제거 후 다시 합치기
+  allKws.forEach(x=>{existing=existing.replace(x.t,'').trim();});
+  existing=existing.replace(/
++/g,'
+').trim();
+  ta.value=kwTexts.join('
+')+(existing?'
+'+existing:'');
+}
+
+function gt(n,b){document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));document.querySelectorAll('.tb').forEach(x=>x.classList.remove('on'));document.getElementById('p'+n).classList.add('on');b.classList.add('on');ra();}
+function ra(){rh();rt();rm();}
+function fc(){sq=document.getElementById('si').value.toLowerCase();rh();}
+
+function rh(){
+  const g=document.getElementById('hg');
+  let f=chars.filter(c=>{const mg=fg==='전체'||c.genre===fg;const ms=!sq||c.name.toLowerCase().includes(sq)||(c.desc||'').toLowerCase().includes(sq)||(c.tags||[]).some(t=>t.toLowerCase().includes(sq));return mg&&ms;});
+  if(!f.length){g.innerHTML=`<div class="empty" style="grid-column:1/-1"><div class="ei">📖</div><p>${chars.length?'검색 결과 없음':'캐릭터를 만들어보세요!'}</p></div>`;return;}
+  g.innerHTML='';
+  f.forEach(c=>{const i=chars.indexOf(c);const card=document.createElement('div');card.className='ccard';const ih=c.img?`<img src="${c.img}">`:`<span>${c.emoji||'🧝'}</span>`;const th=(c.tags||[]).slice(0,2).map(t=>`<span class="tag">#${t}</span>`).join('');card.innerHTML=`<div class="cimg">${ih}<span class="cgen">${c.genre}</span></div><div class="cinf"><div class="cname">${c.name}</div><div class="cdesc">${c.desc||''}</div><div class="ctags">${th}</div></div>`;card.onclick=()=>od(i);g.appendChild(card);});
+}
+
+function rt(){
+  const el=document.getElementById('tl');const wh=chars.filter(c=>localStorage.getItem('h_'+c.name));
+  if(!wh.length){el.innerHTML=`<div class="empty"><div class="ei">💬</div><p>대화 기록이 없어요</p></div>`;return;}
+  el.innerHTML='';wh.forEach(c=>{const h=JSON.parse(localStorage.getItem('h_'+c.name)||'[]');const last=h[h.length-1];const item=document.createElement('div');item.className='citem';item.innerHTML=`<div class="cav">${c.img?`<img src="${c.img}">`:(c.emoji||'🧝')}</div><div class="cif"><div class="cnm">${c.name}</div><div class="cpv">${last?last.content.slice(0,40):'대화를 시작해보세요'}</div></div>`;const i=chars.indexOf(c);item.onclick=()=>sc(i);el.appendChild(item);});
+}
+
+function rm(){
+  const el=document.getElementById('ml');if(!chars.length){el.innerHTML=`<div class="empty"><div class="ei">✨</div><p>+ 버튼으로 만들어보세요!</p></div>`;return;}
+  el.innerHTML='';chars.forEach((c,i)=>{const h=JSON.parse(localStorage.getItem('h_'+c.name)||'[]');const item=document.createElement('div');item.className='mitem';item.innerHTML=`<div class="mav">${c.img?`<img src="${c.img}">`:(c.emoji||'🧝')}</div><div class="mif"><div class="mnm">${c.name}</div><div class="mst">${c.genre} · 대화 ${h.length}개</div></div><div class="mac"><button class="ib" onclick="ec(event,${i})">✏️</button><button class="ib del" onclick="dc(event,${i})">🗑</button></div>`;item.onclick=()=>od(i);el.appendChild(item);});
+}
+
+function od(i){ci2=i;const c=chars[i];const cov=document.getElementById('dc');if(c.img){cov.innerHTML=`<button class="dbk" onclick="cd()">←</button><img src="${c.img}" style="width:100%;height:100%;object-fit:cover"><div class="dcovol"></div>`;}else{cov.innerHTML=`<button class="dbk" onclick="cd()">←</button>${c.emoji||'🧝'}<div class="dcovol"></div>`;}document.getElementById('dn').textContent=c.name;document.getElementById('dg').textContent=c.genre;document.getElementById('dt').innerHTML=(c.tags||[]).map(t=>`<span class="tag">#${t}</span>`).join('');document.getElementById('dd').textContent=c.persona?c.persona.slice(0,200)+'...':'';document.getElementById('dbm').className='dbmb'+(bms.includes(i)?' on':'');document.getElementById('dscr').classList.add('on');}
+function cd(){document.getElementById('dscr').classList.remove('on');}
+function tbm(){const x=bms.indexOf(ci2);if(x===-1){bms.push(ci2);toast('🔖 즐겨찾기');}else{bms.splice(x,1);toast('해제');}localStorage.setItem('bms',JSON.stringify(bms));document.getElementById('dbm').className='dbmb'+(bms.includes(ci2)?' on':'');}
+function sfd(){cd();sc(ci2);}
+
+function sc(i){
+  cur=chars[i];ci2=i;md='d';
+  document.getElementById('md').classList.add('on');document.getElementById('mn2').classList.remove('on');
+  const av=document.getElementById('chav');if(cur.img)av.innerHTML=`<img src="${cur.img}">`;else av.textContent=cur.emoji||'🧝';
+  document.getElementById('chn').textContent=cur.name;document.getElementById('chg').textContent=cur.genre;
+  const bg=document.getElementById('cbgi');if(cur.bg){bg.src=cur.bg;bg.style.display='block';}else bg.style.display='none';
+  const msgs=document.getElementById('msgs');msgs.innerHTML='';
+  hist=JSON.parse(localStorage.getItem('h_'+cur.name)||'[]');hist.forEach(m=>ab(m.role==='user'?'u':'a',m.content,false));
+  if(!hist.length&&cur.greeting)ab('a',cur.greeting,false);
+  document.getElementById('cscr').classList.add('on');document.getElementById('ci').value='';
+  showSuggestions();sb2();
+}
+function cc(){document.getElementById('cscr').classList.remove('on');ra();}
+function sm(m){md=m;document.getElementById('md').classList.toggle('on',m==='d');document.getElementById('mn2').classList.toggle('on',m==='n');toast(m==='d'?'💬 대화 모드':'📖 나레이션 모드');}
+
+function showSuggestions(){
+  const wrap=document.getElementById('suggWrap');
+  const genre=cur?cur.genre:'default';
+  const suggs=SUGGESTIONS[genre]||SUGGESTIONS.default;
+  wrap.innerHTML='';wrap.style.display='flex';
+  suggs.forEach(s=>{const b=document.createElement('button');b.className='sugg-btn';b.textContent=s;b.onclick=()=>{document.getElementById('ci').value=s;document.getElementById('ci').focus();wrap.style.display='none';};wrap.appendChild(b);});
+}
+
+function ab(role,text,anim=true){
+  const msgs=document.getElementById('msgs');const w=document.createElement('div');w.className='msg '+role;if(!anim)w.style.animation='none';
+  const avh=role==='a'?`<div class="mav2">${cur.img?`<img src="${cur.img}">`:(cur.emoji||'🧝')}</div>`:'';
+  const ach=role==='a'?`<div class="mac2"><button class="mab" onclick="rl()">🔄 재생성</button></div>`:'';
+  w.innerHTML=`${avh}<div class="mcol"><div class="bub">${text}</div>${ach}</div>`;msgs.appendChild(w);sb2();return w;
+}
+function sty(){const msgs=document.getElementById('msgs');const w=document.createElement('div');w.className='twrap';w.id='ty';w.innerHTML=`<div class="mav2">${cur.img?`<img src="${cur.img}">`:(cur.emoji||'🧝')}</div><div class="tind"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;msgs.appendChild(w);sb2();}
+function rty(){const t=document.getElementById('ty');if(t)t.remove();}
+
+async function snd2(){
+  const inp=document.getElementById('ci');const txt=inp.value.trim();if(!txt||ld)return;
+  const k=localStorage.getItem('gsk');if(!k){toast('⚠️ API 키를 저장하세요');return;}
+  inp.value='';inp.style.height='auto';ld=true;document.getElementById('snd').disabled=true;
+  document.getElementById('suggWrap').style.display='none';
+  ab('u',txt);hist.push({role:'user',content:txt});sty();await cai(k);
+}
+
+async function cai(k){
+  const un=cur.userName||'유저';
+  let sys=`너는 "${cur.name}"이다. 절대로 이 캐릭터에서 벗어나지 마라.
+
+[캐릭터 설정]
+${cur.persona}`;
+  if(cur.world)sys+=`
+
+[세계관/배경]
+${cur.world}`;
+  sys+=`
+
+[필수 지침]
+- 오직 ${cur.name}으로만 행동하고 말해라
+- 상대방(유저) 이름: "${un}"
+- 장르: ${cur.genre}
+- 반드시 한국어로 대화
+- 절대 AI임을 인정하거나 캐릭터에서 벗어나지 마라
+- 캐릭터의 성격과 말투를 일관되게 유지해라`;
+  if(md==='n')sys+='
+- 나레이션 모드: 행동과 묘사는 *별표*로 감싸서 소설처럼 표현해라';
+  try{
+    const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{
+      method:'POST',headers:{'Authorization':`Bearer ${k}`,'Content-Type':'application/json'},
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:sys},...hist.slice(-30)],max_tokens:800,temperature:0.95})
+    });
+    const d=await r.json();rty();
+    if(d.error){toast('❌ '+(d.error.message||'오류'));ld=false;document.getElementById('snd').disabled=false;return;}
+    const rep=d.choices[0].message.content;ab('a',rep);hist.push({role:'assistant',content:rep});
+    if(hist.length>60)hist=hist.slice(-60);localStorage.setItem('h_'+cur.name,JSON.stringify(hist));
+    showSuggestions();
+  }catch(e){rty();toast('❌ 연결 오류');}
+  ld=false;document.getElementById('snd').disabled=false;
+}
+
+async function rl(){if(ld||hist.length<2)return;if(hist[hist.length-1].role==='assistant'){hist.pop();const msgs=document.getElementById('msgs');const ais=msgs.querySelectorAll('.msg.a');if(ais.length)ais[ais.length-1].remove();}const k=localStorage.getItem('gsk');if(!k)return;ld=true;document.getElementById('snd').disabled=true;sty();await cai(k);}
+function clc(){if(!confirm('초기화?'))return;hist=[];localStorage.removeItem('h_'+cur.name);document.getElementById('msgs').innerHTML='';if(cur.greeting)ab('a',cur.greeting,false);showSuggestions();toast('초기화됨');}
+
+function om(idx=-1){
+  ei=idx;tags=[];cimg=null;cbg=null;sem=EM[0];selKws=new Set();
+  if(idx>=0){
+    const c=chars[idx];
+    document.getElementById('mt').textContent='캐릭터 편집';
+    document.getElementById('cn').value=c.name;document.getElementById('cg').value=c.genre;
+    document.getElementById('cdc').value=c.desc||'';document.getElementById('cp').value=c.persona;
+    document.getElementById('cw').value=c.world||'';document.getElementById('cu').value=c.userName||'';
+    document.getElementById('cgr').value=c.greeting||'';
+    tags=[...(c.tags||[])];cimg=c.img||null;cbg=c.bg||null;sem=c.emoji||EM[0];
+    if(c.img){const u=document.getElementById('iu');u.classList.add('has');u.innerHTML=`<img src="${c.img}"><button class="ich" onclick="event.stopPropagation();tci()">변경</button>`;}
+    if(c.bg){const u=document.getElementById('bgu');u.classList.add('has');u.innerHTML=`<img src="${c.bg}"><button class="ich" onclick="event.stopPropagation();tbi()">변경</button>`;}
+  }else{
+    document.getElementById('mt').textContent='캐릭터 만들기';
+    ['cn','cdc','cp','cw','cu','cgr'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cg').value='판타지';
+    const u=document.getElementById('iu');u.classList.remove('has');u.innerHTML=`<div><div class="iupi">🖼️</div><div class="iupt">탭해서 선택</div></div>`;
+    const b=document.getElementById('bgu');b.classList.remove('has');b.innerHTML=`<div><div class="iupi">🌄</div><div class="iupt">배경 이미지 선택</div></div>`;
+  }
+  rt2();beg();bkw();
+  setTimeout(()=>{document.querySelectorAll('.ebtn').forEach(b=>{if(b.textContent===sem)b.classList.add('on');else b.classList.remove('on');});},50);
+  document.getElementById('mo').classList.add('on');
+}
+function cm(){document.getElementById('mo').classList.remove('on');}
+function tci(){document.getElementById('cii').click();}
+function hci(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{cimg=ev.target.result;const u=document.getElementById('iu');u.classList.add('has');u.innerHTML=`<img src="${cimg}"><button class="ich" onclick="event.stopPropagation();tci()">변경</button>`;};r.readAsDataURL(f);}
+function tbi(){document.getElementById('bgi').click();}
+function hbi(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{cbg=ev.target.result;const u=document.getElementById('bgu');u.classList.add('has');u.innerHTML=`<img src="${cbg}"><button class="ich" onclick="event.stopPropagation();tbi()">변경</button>`;};r.readAsDataURL(f);}
+function at(){const i=document.getElementById('ti');const v=i.value.trim().replace(/^#/,'');if(!v||tags.includes(v)){i.value='';return;}tags.push(v);i.value='';rt2();}
+function removeTag(t){tags=tags.filter(x=>x!==t);rt2();}
+function rt2(){document.getElementById('tl2').innerHTML=tags.map(t=>`<div class="titem">#${t}<button class="trm" onclick="removeTag('${t}')">✕</button></div>`).join('');}
+function otk(e){if(e.key==='Enter'){e.preventDefault();at();}}
+function sv(){
+  const name=document.getElementById('cn').value.trim();const persona=document.getElementById('cp').value.trim();
+  if(!name){toast('이름 입력하세요');return;}if(!persona){toast('캐릭터 설정 입력하세요');return;}
+  const c={name,genre:document.getElementById('cg').value,desc:document.getElementById('cdc').value.trim(),persona,world:document.getElementById('cw').value.trim(),userName:document.getElementById('cu').value.trim(),greeting:document.getElementById('cgr').value.trim(),emoji:sem,img:cimg,bg:cbg,tags:[...tags]};
+  if(ei>=0){chars[ei]=c;toast('✅ 수정됨');}else{chars.push(c);toast('✅ 저장됨');}
+  localStorage.setItem('cv3',JSON.stringify(chars));cm();ra();
+}
+function ec(e,i){e.stopPropagation();om(i);}
+function dc(e,i){e.stopPropagation();if(!confirm(`"${chars[i].name}" 삭제?`))return;localStorage.removeItem('h_'+chars[i].name);chars.splice(i,1);localStorage.setItem('cv3',JSON.stringify(chars));ra();toast('삭제됨');}
+function tpi(){document.getElementById('pii').click();}
+function hpi(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=ev=>{const img=ev.target.result;document.getElementById('pa').innerHTML=`<img src="${img}">`;const p=JSON.parse(localStorage.getItem('prof')||'{}');p.img=img;localStorage.setItem('prof',JSON.stringify(p));toast('✅ 프로필 저장');};r.readAsDataURL(f);}
+function opo(){document.getElementById('po').classList.add('on');}
+function cpo(){document.getElementById('po').classList.remove('on');}
+function sp(){const name=document.getElementById('pn').value.trim()||'사용자';const id=document.getElementById('pid2').value.trim()||'@user';const p=JSON.parse(localStorage.getItem('prof')||'{}');p.name=name;p.id=id;localStorage.setItem('prof',JSON.stringify(p));document.getElementById('mn').textContent=name;document.getElementById('mid').textContent=id;cpo();toast('✅ 저장됨');}
+function sa(){const k=document.getElementById('ak').value.trim();if(!k){toast('키 입력하세요');return;}localStorage.setItem('gsk',k);toast('✅ API 키 저장됨');}
+function ca(){if(!confirm('모든 데이터 초기화?'))return;localStorage.clear();chars=[];bms=[];ra();toast('초기화됨');}
+function ok(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();snd2();}}
+function rsz(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+function sb2(){const m=document.getElementById('msgs');setTimeout(()=>m.scrollTop=m.scrollHeight,50);}
+function toast(msg){const t=document.getElementById('tst');t.textContent=msg;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),2500);}
+document.querySelectorAll('.ovl').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on');}));
+ini();
+</script>
+</body>
+</html>
